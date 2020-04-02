@@ -1,10 +1,13 @@
-package Model;/*
+/*
  * Type class Model.Travel. Contains an id, origin, destiny, date and sets distribution.
  *
  * Model.Travel.java
  *
- * @version 1.0
- * @author Pablo Sanz Alguacil */
+ * @version 2.1
+ * @author Pablo Sanz Alguacil
+ */
+
+package Model;
 
 import com.sun.istack.internal.NotNull;
 import java.io.PrintWriter;

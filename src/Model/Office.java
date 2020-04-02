@@ -1,34 +1,29 @@
-package Model;/*
+/*
  * Type class Model.Office. Contains the methods to manage the passengers and travels.
  *
  * Model.Office.java
  *
- * @version 1.0
- * @author Pablo Sanz Alguacil */
+ * @version 2.1
+ * @author Pablo Sanz Alguacil
+ */
 
-import Model.Passenger;
-import Model.Storable;
-import Model.Travel;
+package Model;
 
 import java.io.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
 
 public class Office {
-    private static final int MAX_PASSENGERS = 1000;
-    private static final int MAX_TRAVELS = 1000;
-
-    private final Passenger[] passengers;
-    private int indexPassengers;
-    private final Travel[] travels;
-    private int indexTravels;
+    private static Collection<Passenger> passengers;
+    private static Collection<Travel> travels;
 
     /**
      * Constructor method. Creates an empty office.
      */
     public Office() {
-        passengers = new Passenger[MAX_PASSENGERS];
-        indexPassengers = -1;
-        travels = new Travel[MAX_TRAVELS];
-        indexTravels = -1;
+        passengers = new ArrayList<>();
+        travels = new ArrayList<>();
     }
 
     /**
@@ -38,10 +33,8 @@ public class Office {
      * @param travelsStatusFile String
      */
     public Office(String passengersFile, String travelsFile, String travelsStatusFile) {
-        passengers = new Passenger[MAX_PASSENGERS];
-        indexPassengers = -1;
-        travels = new Travel[MAX_TRAVELS];
-        indexTravels = -1;
+        passengers = new ArrayList<>();
+        travels = new ArrayList<>();
         readTravels(travelsFile);
         readPassengers(passengersFile);
         readTravelsStatus(travelsStatusFile);
@@ -53,12 +46,9 @@ public class Office {
      * @return boolean.
      */
     public boolean addPassenger (Passenger passenger) {
-        if(indexPassengers < MAX_PASSENGERS) {
-            if(searchPassenger(passenger.getDni()) == null){
-                passengers[indexPassengers + 1] = passenger;
-                indexPassengers += 1;
-                return true;
-            }
+        if(searchPassenger(passenger.getDni()) == null) {
+            passengers.add(passenger);
+            return true;
         }
         return false;
     }
@@ -70,12 +60,9 @@ public class Office {
      * @return boolean
      */
     public boolean addTravel (Travel travel) {
-        if(indexTravels < MAX_TRAVELS) {
-            if(searchTravel(travel.getId()) == null){
-                travels[indexTravels + 1] = travel;
-                indexTravels += 1;
-                return true;
-            }
+        if(searchTravel(travel.getId()) == null){
+            travels.add(travel);
+            return true;
         }
         return false;
     }
@@ -86,34 +73,18 @@ public class Office {
      * @param passenger Model.Passenger
      * @return boolean
      */
-    public boolean deletePassenger (Passenger passenger) {
-        for (int i = 0; i <= indexPassengers; i++) {
-            if (passengers[i].equals(passenger)){
-                passengers[i] = passengers[indexPassengers];
-                passengers[indexPassengers] = null;
-                indexPassengers--;
-                return true;
-            }
-        }
-        return false;
+    public void deletePassenger (Passenger passenger) {
+        passengers.remove(passenger);
     }
 
 
     /**
-     * Deletes a travel. Returns true in case of success.
+     * Deletes a travel.
      * @param travel Model.Travel
      * @return boolean
      */
-    public boolean deleteTravel (Travel travel) {
-        for (int i = 0; i <= indexTravels; i++) {
-            if (travels[i].equals(travel)){
-                travels[i] = travels[indexTravels];
-                travels[indexTravels] = null;
-                indexTravels--;
-                return true;
-            }
-        }
-        return false;
+    public void deleteTravel (Travel travel) {
+        travels.remove(travel);
     }
 
 
@@ -124,11 +95,10 @@ public class Office {
      * @return boolean
      */
     public boolean modifyPassenger (String dni, Passenger updatedPassenger) {
-        for (int i = 0; i <= indexPassengers; i++) {
-            if (passengers[i].getDni().equals(dni)){
-                passengers[i] = updatedPassenger;
-                return true;
-            }
+        if(searchPassenger(dni) != null) {
+            passengers.remove(searchPassenger(dni));
+            passengers.add(updatedPassenger);
+            return true;
         }
         return false;
     }
@@ -141,11 +111,10 @@ public class Office {
      * @return boolean.
      */
     public boolean modifyTravel (String id, Travel updatedTravel) {
-        for(int i = 0; i <= indexTravels; i++) {
-            if (travels[i].getId().equals(id)) {
-                travels[i] = updatedTravel;
-                return true;
-            }
+        if(searchTravel(id) != null){
+            travels.remove(searchTravel(id));
+            travels.add(updatedTravel);
+            return true;
         }
         return false;
     }
@@ -157,9 +126,11 @@ public class Office {
      * @return Model.Passenger
      */
     public Passenger searchPassenger (String dni){
-        for (int i = 0; i <= indexPassengers; i++) {
-            if (passengers[i].getDni().equals(dni)){
-                return passengers[i];
+        Iterator it = passengers.iterator();
+        while(it.hasNext()) {
+            Passenger element = (Passenger) it.next();
+            if (element.getDni().equals(dni)){
+                return element;
             }
         }
         return null;
@@ -172,9 +143,11 @@ public class Office {
      * @return
      */
     public Travel searchTravel(String id){
-        for (int i = 0; i <= indexTravels; i++) {
-            if (travels[i].getId().equals(id)){
-                return travels[i];
+        Iterator it = travels.iterator();
+        while(it.hasNext()) {
+            Travel element = (Travel) it.next();
+            if (element.getId().equals(id)){
+                return element;
             }
         }
         return null;
@@ -187,9 +160,13 @@ public class Office {
      */
     public StringBuilder listPassengers (){
         StringBuilder passengersList = new StringBuilder();
-        for(int i = 0;i<=indexPassengers;i++){
-            passengersList.append(passengers[i].toString()).append("\n");
+
+        Iterator it = passengers.iterator();
+        while(it.hasNext()) {
+            Passenger element = (Passenger) it.next();
+            passengersList.append(element.toString()).append("\n");
         }
+
         return passengersList;
     }
 
@@ -200,8 +177,11 @@ public class Office {
      */
     public StringBuilder listTravels (){
         StringBuilder travelsList = new StringBuilder();
-        for(int i = 0;i <= indexTravels;i++){
-            travelsList.append(travels[i].toString()).append("\n");
+
+        Iterator it = travels.iterator();
+        while(it.hasNext()) {
+            Travel element = (Travel) it.next();
+            travelsList.append(element.toString()).append("\n");
         }
         return travelsList;
     }
@@ -324,13 +304,16 @@ public class Office {
     /**
      * Saves a Model.Storable type array in a file.
      * @param fileName String
-     * @param elements Model.Storable
+     * @param collection Collection
      * @throws IOException
      */
-    private void save (String fileName, Storable[] elements) throws IOException {
+    private void save (String fileName, Collection collection) throws IOException {
         PrintWriter file = new PrintWriter( new BufferedWriter( new FileWriter(fileName)));
-        for(int i = 0; elements[i] != null; i++) {
-            elements[i].save(file);
+
+        Iterator it = collection.iterator();
+        while(it.hasNext()) {
+            Storable element = (Storable) it.next();
+            element.save(file);
         }
         file.close();
     }
@@ -343,9 +326,13 @@ public class Office {
      */
     public void saveTravelsStatus (String fileName) throws IOException {
         PrintWriter file = new PrintWriter( new BufferedWriter( new FileWriter(fileName)));
-        for(int i = 0; i <= indexTravels; i++){
-            travels[i].saveTravelStatus(file);
+
+        Iterator it = travels.iterator();
+        while(it.hasNext()) {
+            Travel element = (Travel) it.next();
+            element.saveTravelStatus(file);
         }
+
         file.close();
     }
 
@@ -360,8 +347,7 @@ public class Office {
             String line = bufferedReader.readLine();
 
             for (int i = 0; line != null; i++) {
-                passengers[i] = new Passenger(line);
-                indexPassengers++;
+                passengers.add(new Passenger(line));
                 line = bufferedReader.readLine();
             }
         } catch (IOException e) {
@@ -379,8 +365,7 @@ public class Office {
             String line = bufferedReader.readLine();
 
             for (int i = 0; line != null; i++) {
-                travels[i] = new Travel(line);
-                indexTravels++;
+                travels.add(new Travel(line));
                 line = bufferedReader.readLine();
             }
         } catch (IOException e) {
@@ -399,11 +384,13 @@ public class Office {
 
             for (int i = 0; line != null; i++) { //Each line of the file
                 String[] tokens =  line.split(";");
-                for(int j = 0; j < indexTravels; j++) { //Each travel on the array
-                    if(tokens[0].equals(travels[j].getId())) { //If tavel matches to the readed id
+                Iterator it = travels.iterator();
+                while(it.hasNext()) { //Each travel on the array
+                    Travel element = (Travel) it.next();
+                    if(tokens[0].equals(element.getId())) { //If tavel matches to the readed id
                         for(int k = 1; k < tokens.length; k++) { //Each element on the line
                             String[] elements = tokens[k].split("-");
-                            travels[j].assignSeat(Integer.parseInt(elements[0]), elements[1]);
+                            element.assignSeat(Integer.parseInt(elements[0]), elements[1]);
                         }
                     }
                 }

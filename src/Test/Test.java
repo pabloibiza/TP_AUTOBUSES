@@ -1,10 +1,13 @@
-package Test;/*
+/*
  * Type class Test.Test. It doesn't loads any data.
  *
  * Test.Test.java
  *
  * @version 1.0
- * @author Pablo Sanz Alguacil */
+ * @author Pablo Sanz Alguacil
+ */
+
+package Test;
 
 import Model.Office;
 import Model.Passenger;

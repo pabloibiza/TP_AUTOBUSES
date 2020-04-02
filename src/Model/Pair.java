@@ -1,10 +1,13 @@
-package Model;/*
+/*
  * Type class Model.Pair. An tuple object that contains a seat and a passenger.
  *
  * Model.Pair.java
  *
- * @version 1.0
- * @author Pablo Sanz Alguacil */
+ * @version 2.1
+ * @author Pablo Sanz Alguacil
+ */
+
+package Model;
 
 public class Pair<seat, passengerID> {
 
