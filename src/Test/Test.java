@@ -1,10 +1,14 @@
-/*
- * Type class Test. It doesn't loads any data.
+package Test;/*
+ * Type class Test.Test. It doesn't loads any data.
  *
- * Test.java
+ * Test.Test.java
  *
  * @version 1.0
  * @author Pablo Sanz Alguacil */
+
+import Model.Office;
+import Model.Passenger;
+import Model.Travel;
 
 import java.io.IOException;
 import java.util.Calendar;

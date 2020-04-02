@@ -1,7 +1,7 @@
-/*
- * Type class Pair. An tuple object that contains a seat and a passenger.
+package Model;/*
+ * Type class Model.Pair. An tuple object that contains a seat and a passenger.
  *
- * Pair.java
+ * Model.Pair.java
  *
  * @version 1.0
  * @author Pablo Sanz Alguacil */
@@ -29,6 +29,7 @@ public class Pair<seat, passengerID> {
         return seat;
     }
 
+
     /**
      * Returns the passenger ID.
      * @return String
@@ -37,6 +38,7 @@ public class Pair<seat, passengerID> {
         return passengerID;
     }
 
+
     /**
      * Modifies seat.
      * @param newSeat
@@ -44,6 +46,7 @@ public class Pair<seat, passengerID> {
     public void setSeat(int newSeat){
         seat = newSeat;
     }
+
 
     /**
      * Modifies the ID.

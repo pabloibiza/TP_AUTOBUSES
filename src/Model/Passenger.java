@@ -1,7 +1,7 @@
-/*
- * Type class Passenger. Contains a DNI, name, and surname.
+package Model;/*
+ * Type class Model.Passenger. Contains a DNI, name, and surname.
  *
- * Passenger.java
+ * Model.Passenger.java
  *
  * @version 1.0
  * @author Pablo Sanz Alguacil */
@@ -10,7 +10,7 @@ import com.sun.istack.internal.NotNull;
 import java.io.PrintWriter;
 import java.util.Objects;
 
-public class Passenger implements Storable{
+public class Passenger implements Storable {
     private String dni;
     private String name;
     private String surname;
@@ -29,7 +29,7 @@ public class Passenger implements Storable{
     }
 
     /**
-     * Constructor method to create a new Passenger from the received String. The String contains all data
+     * Constructor method to create a new Model.Passenger from the received String. The String contains all data
      * separated by ";" for each element.
      * @param line String
      */
@@ -40,6 +40,7 @@ public class Passenger implements Storable{
         this.surname = elements[2];
     }
 
+
     /**
      * Returns the DNI of the passenger.
      * @return Integer
@@ -47,6 +48,7 @@ public class Passenger implements Storable{
     public String getDni(){
         return dni;
     }
+
 
     /**
      * Overwrited toString(). It returns a string composed by the DNI, name, and surname.
@@ -56,6 +58,7 @@ public class Passenger implements Storable{
     public String toString(){
         return dni + ";" + name + ";" + surname;
     }
+
 
     /**
      * Overwrited equals. Compares an object with this passenger.
@@ -69,6 +72,7 @@ public class Passenger implements Storable{
         Passenger tmp = (Passenger)obj;
         return Objects.equals(dni, tmp.dni);
     }
+
 
     /**
      * Saves a contact throw the receives PrintWriter.

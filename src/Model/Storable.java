@@ -1,5 +1,5 @@
-/*
-  Storable.java
+package Model;/*
+  Model.Storable.java
 
   @version 1.0
  * @author Pablo Sanz Alguacil

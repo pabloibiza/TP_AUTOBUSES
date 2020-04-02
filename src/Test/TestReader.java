@@ -1,10 +1,12 @@
-/*
- * Type class Test. It reads data from the saved files.
+package Test;/*
+ * Type class Test.Test. It reads data from the saved files.
  *
- * Test.java
+ * Test.Test.java
  *
  * @version 1.0
  * @author Pablo Sanz Alguacil */
+
+import Model.Office;
 
 public class TestReader {
 

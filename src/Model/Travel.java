@@ -1,7 +1,7 @@
-/*
- * Type class Travel. Contains an id, origin, destiny, date and sets distribution.
+package Model;/*
+ * Type class Model.Travel. Contains an id, origin, destiny, date and sets distribution.
  *
- * Travel.java
+ * Model.Travel.java
  *
  * @version 1.0
  * @author Pablo Sanz Alguacil */
@@ -11,7 +11,7 @@ import java.io.PrintWriter;
 import java.util.GregorianCalendar;
 import java.util.Objects;
 
-public class Travel implements Storable{
+public class Travel implements Storable {
     private String id;
     private String origin;
     private String destiny;
@@ -41,7 +41,7 @@ public class Travel implements Storable{
     }
 
     /**
-     * Constructor method to create a new Travel from the received String. The String contains all
+     * Constructor method to create a new Model.Travel from the received String. The String contains all
      * data separated by ";" for each element.
      * @param line String
      */
@@ -73,6 +73,7 @@ public class Travel implements Storable{
                 Integer.parseInt(tokens[7]));
     }
 
+
     /**
      * Returns id.
      * @return String
@@ -80,6 +81,7 @@ public class Travel implements Storable{
     public String getId() {
         return id;
     }
+
 
     /**
      * Returns the origin.
@@ -89,6 +91,7 @@ public class Travel implements Storable{
         return origin;
     }
 
+
     /**
      * Returns the destiny.
      * @return String
@@ -96,6 +99,7 @@ public class Travel implements Storable{
     public String getDestiny(){
         return destiny;
     }
+
 
     /**
      * Returns the date ready to print on the screen.
@@ -117,6 +121,7 @@ public class Travel implements Storable{
         return seatsDistribution;
     }
 
+
     /**
      * Returns the number of seats.
      * @return Integer
@@ -124,6 +129,7 @@ public class Travel implements Storable{
     public int getSeatsNumber(){
         return seatsNumber;
     }
+
 
     /**
      * Overwrited equals. Compares an object with this travel.
@@ -137,6 +143,7 @@ public class Travel implements Storable{
         Travel tmp = (Travel)obj;
         return Objects.equals(id, tmp.id);
     }
+
 
     /**
      * Overwrited toString(). It returns a string composed by the id, origin, destiny, date, and seats distribution.
@@ -152,8 +159,9 @@ public class Travel implements Storable{
                 date.get(GregorianCalendar.MINUTE);
     }
 
+
     /**w
-     * Saves the travel throw the recieved PrintWriter.
+     * Saves the travel throw the received PrintWriter.
      * @param printWriter PrintWriter
      */
     @Override
@@ -171,6 +179,7 @@ public class Travel implements Storable{
         printWriter.println(line);
     }
 
+
     /**
      * Saves the travel status throw the recieved PrintWriter.
      * @param printWriter PrintWriter
@@ -186,6 +195,7 @@ public class Travel implements Storable{
         printWriter.println(line);
     }
 
+
     /**
      * Assigns a seat to a received passenger (only DNI). Returns true in case of success.
      * @param seat Integer
@@ -200,6 +210,7 @@ public class Travel implements Storable{
             return false;
     }
 
+
     /**
      * Removes the asignated pasenger of the received seat.
      * @param seat Integer
@@ -207,6 +218,7 @@ public class Travel implements Storable{
     public void unassignSeat(int seat){
         seats[seat] = null;
     }
+
 
     /**
      * Checks if the received seat free. Returns true in case of be free.
@@ -219,6 +231,7 @@ public class Travel implements Storable{
         }
         return false;
     }
+
 
     /**
      * Returns the passenger DNI who is sited on the received seat.

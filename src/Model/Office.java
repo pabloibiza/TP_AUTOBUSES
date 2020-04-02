@@ -1,10 +1,14 @@
-/*
- * Type class Office. Contains the methods to manage the passengers and travels.
+package Model;/*
+ * Type class Model.Office. Contains the methods to manage the passengers and travels.
  *
- * Office.java
+ * Model.Office.java
  *
  * @version 1.0
  * @author Pablo Sanz Alguacil */
+
+import Model.Passenger;
+import Model.Storable;
+import Model.Travel;
 
 import java.io.*;
 
@@ -45,8 +49,8 @@ public class Office {
 
     /**
      * Adds a new passenger. Returns true in case of success.
-     * @param passenger Passenger.
-     * @return bollean.
+     * @param passenger Model.Passenger.
+     * @return boolean.
      */
     public boolean addPassenger (Passenger passenger) {
         if(indexPassengers < MAX_PASSENGERS) {
@@ -59,9 +63,10 @@ public class Office {
         return false;
     }
 
+
     /**
      * Adds a new travel. Returns true in case of success.
-     * @param travel Travel
+     * @param travel Model.Travel
      * @return boolean
      */
     public boolean addTravel (Travel travel) {
@@ -75,9 +80,10 @@ public class Office {
         return false;
     }
 
+
     /**
      * Deletes a passenger. Returns true in case of success.
-     * @param passenger Passenger
+     * @param passenger Model.Passenger
      * @return boolean
      */
     public boolean deletePassenger (Passenger passenger) {
@@ -92,9 +98,10 @@ public class Office {
         return false;
     }
 
+
     /**
      * Deletes a travel. Returns true in case of success.
-     * @param travel Travel
+     * @param travel Model.Travel
      * @return boolean
      */
     public boolean deleteTravel (Travel travel) {
@@ -109,10 +116,11 @@ public class Office {
         return false;
     }
 
+
     /**
      * Modifies a passenger. Returns true in case of success.
      * @param dni String
-     * @param updatedPassenger Passenger
+     * @param updatedPassenger Model.Passenger
      * @return boolean
      */
     public boolean modifyPassenger (String dni, Passenger updatedPassenger) {
@@ -125,10 +133,11 @@ public class Office {
         return false;
     }
 
+
     /**
      * Modifies a travel. Returns true in case of success.
      * @param id String
-     * @param updatedTravel Travel.
+     * @param updatedTravel Model.Travel.
      * @return boolean.
      */
     public boolean modifyTravel (String id, Travel updatedTravel) {
@@ -141,10 +150,11 @@ public class Office {
         return false;
     }
 
+
     /**
      * Returns the passenger with the received DNI. In case of not success returns null.
      * @param dni String
-     * @return Passenger
+     * @return Model.Passenger
      */
     public Passenger searchPassenger (String dni){
         for (int i = 0; i <= indexPassengers; i++) {
@@ -154,6 +164,7 @@ public class Office {
         }
         return null;
     }
+
 
     /**
      * Returns the travel with the received ID. In case of not success returns null.
@@ -169,6 +180,7 @@ public class Office {
         return null;
     }
 
+
     /**
      * Lists the passengers.
      * @return StringBuilder
@@ -180,6 +192,7 @@ public class Office {
         }
         return passengersList;
     }
+
 
     /**
      * Lists the travels.
@@ -193,10 +206,11 @@ public class Office {
         return travelsList;
     }
 
+
     /**
      * Assigns the received seat to the received passenger on a travel. Returns true in case of success.
-     * @param travel Travel
-     * @param passenger Passenger
+     * @param travel Model.Travel
+     * @param passenger Model.Passenger
      * @param seat Integer
      * @return boolean
      */
@@ -207,20 +221,22 @@ public class Office {
         return false;
     }
 
+
     /**
      * Unassigns the received seat to its passenger on the received travel.
-     * @param travel Travel
+     * @param travel Model.Travel
      * @param seat Ineger
      */
     public void unassignSeat (Travel travel, int seat){
         travel.unassignSeat(seat);
     }
 
+
     /**
      * Returns the passenger sited on the received seat.
-     * @param travel Travel
+     * @param travel Model.Travel
      * @param seat Integer
-     * @return Passenger
+     * @return Model.Passenger
      */
     public Passenger whoIsSited (Travel travel, int seat){
         String dni = travel.whoIsSited(seat);
@@ -228,9 +244,10 @@ public class Office {
         return searchPassenger(dni);
     }
 
+
     /**
      * Returns the travel route sheet of a travel.
-     * @param travel Travel
+     * @param travel Model.Travel
      * @return String Builder
      */
     public StringBuilder viewTravelSheet(Travel travel){
@@ -253,9 +270,10 @@ public class Office {
         return plan;
     }
 
+
     /**
      * Retuns the seats status of a travel.
-     * @param travel Travel
+     * @param travel Model.Travel
      * @return StringBuilder
      */
     public StringBuilder seatsStatus(Travel travel) {
@@ -282,6 +300,7 @@ public class Office {
         return plan;
     }
 
+
     /**
      * Saves the passengers on a file.
      * @param fileName String
@@ -290,6 +309,7 @@ public class Office {
     public void savePassengers (String fileName) throws IOException {
         save(fileName, passengers);
     }
+
 
     /**
      * Saves the travels on a file.
@@ -300,10 +320,11 @@ public class Office {
         save(fileName, travels);
     }
 
+
     /**
-     * Saves a Storable type array in a file.
+     * Saves a Model.Storable type array in a file.
      * @param fileName String
-     * @param elements Storable
+     * @param elements Model.Storable
      * @throws IOException
      */
     private void save (String fileName, Storable[] elements) throws IOException {
@@ -313,6 +334,7 @@ public class Office {
         }
         file.close();
     }
+
 
     /**
      * Saves the seats status from a travel to a file.
@@ -326,6 +348,7 @@ public class Office {
         }
         file.close();
     }
+
 
     /**
      * Reads the passengers from a file.
@@ -346,6 +369,7 @@ public class Office {
         }
     }
 
+
     /**
      * Reads the travels from a file.
      * @param file String
@@ -363,6 +387,7 @@ public class Office {
             e.printStackTrace();
         }
     }
+
 
     /**
      * Reads seats status of a travel from a file.
