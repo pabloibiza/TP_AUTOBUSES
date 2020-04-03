@@ -9,6 +9,8 @@
 
 package Model;
 
+import com.sun.istack.internal.NotNull;
+
 import java.io.*;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -17,6 +19,7 @@ import java.util.Iterator;
 public class Office {
     private static Collection<Passenger> passengers;
     private static Collection<Travel> travels;
+    private static final String ELEMENTS_SEPARATOR = ",";
 
     /**
      * Constructor method. Creates an empty office.
@@ -302,12 +305,12 @@ public class Office {
 
 
     /**
-     * Saves a Model.Storable type array in a file.
+     * Saves a Storable type array in a file.
      * @param fileName String
      * @param collection Collection
      * @throws IOException
      */
-    private void save (String fileName, Collection collection) throws IOException {
+    private void save (String fileName, @NotNull Collection collection) throws IOException {
         PrintWriter file = new PrintWriter( new BufferedWriter( new FileWriter(fileName)));
 
         Iterator it = collection.iterator();
@@ -378,23 +381,28 @@ public class Office {
      * Reads seats status of a travel from a file.
      * @param file String
      */
-    public void readTravelsStatus (String file){
+    public void readTravelsStatus (String file) {
         try (BufferedReader bufferedReader = new BufferedReader(new FileReader(file))) {
             String line = bufferedReader.readLine();
 
-            for (int i = 0; line != null; i++) { //Each line of the file
-                String[] tokens =  line.split(";");
+            for (int i = 0; line != null; i++) { //Each line of the file.
+                String[] tokens =  line.split(ELEMENTS_SEPARATOR);
                 Iterator it = travels.iterator();
-                while(it.hasNext()) { //Each travel on the array
+                while(it.hasNext()) { //Each travel on the list.
                     Travel element = (Travel) it.next();
-                    if(tokens[0].equals(element.getId())) { //If tavel matches to the readed id
-                        for(int k = 1; k < tokens.length; k++) { //Each element on the line
+                    if(tokens[0].equals(element.getId())) { //If tavel matches to the read id.
+                        for(int k = 1; k < tokens.length; k++) { //Each element on the line.
                             String[] elements = tokens[k].split("-");
-                            element.assignSeat(Integer.parseInt(elements[0]), elements[1]);
+                            try {
+                                if (!element.assignSeat(Integer.parseInt(elements[0]), elements[1])) {
+                                    throw new SeatsReadException(2, null);
+                                }
+                            } catch (NumberFormatException e){
+                                throw new SeatsReadException(1, tokens[k]);
+                            }
                         }
                     }
                 }
-
                 line = bufferedReader.readLine();
             }
         } catch (IOException e) {

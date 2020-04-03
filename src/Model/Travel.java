@@ -22,6 +22,7 @@ public class Travel implements Storable {
     private int seatsNumber;
     private Pair[] seats;
     private String seatsDistribution;
+    private static final String ELEMENTS_SEPARATOR = ",";
 
     /**
      * Constructor method.
@@ -49,7 +50,7 @@ public class Travel implements Storable {
      * @param line String
      */
     public Travel(@NotNull String line) {
-        String[] tokens = line.split(";");
+        String[] tokens = line.split(ELEMENTS_SEPARATOR);
         id = tokens[0];
         origin = tokens[1];
         destiny = tokens[2];
@@ -67,7 +68,7 @@ public class Travel implements Storable {
      * @return GregorianCalendar
      */
     private GregorianCalendar readGregorianCalendar(String line) {
-        String[] tokens = line.split(";");
+        String[] tokens = line.split(ELEMENTS_SEPARATOR);
         return new GregorianCalendar(
                 Integer.parseInt(tokens[3]),
                 Integer.parseInt(tokens[4]),
@@ -154,11 +155,11 @@ public class Travel implements Storable {
      */
     @Override
     public String toString() {
-        return id + ";" + origin + ";" + destiny + ";" +
-                date.get(GregorianCalendar.DAY_OF_MONTH) + ";" +
-                date.get(GregorianCalendar.MONTH) + ";" +
-                date.get(GregorianCalendar.YEAR) + ";" +
-                date.get(GregorianCalendar.HOUR_OF_DAY)+ ";" +
+        return id + ELEMENTS_SEPARATOR + origin + ELEMENTS_SEPARATOR + destiny + ELEMENTS_SEPARATOR +
+                date.get(GregorianCalendar.DAY_OF_MONTH) + ELEMENTS_SEPARATOR +
+                date.get(GregorianCalendar.MONTH) + ELEMENTS_SEPARATOR +
+                date.get(GregorianCalendar.YEAR) + ELEMENTS_SEPARATOR +
+                date.get(GregorianCalendar.HOUR_OF_DAY)+ ELEMENTS_SEPARATOR +
                 date.get(GregorianCalendar.MINUTE);
     }
 
@@ -170,14 +171,14 @@ public class Travel implements Storable {
     @Override
     public void save(PrintWriter printWriter){
         StringBuilder line = new StringBuilder();
-        line.append(id).append(";")
-                .append(origin).append(";")
-                .append(destiny).append(";")
-                .append(date.get(GregorianCalendar.YEAR)).append(";")
-                .append(date.get(GregorianCalendar.MONTH)).append(";")
-                .append(date.get(GregorianCalendar.DAY_OF_MONTH)).append(";")
-                .append(date.get(GregorianCalendar.HOUR_OF_DAY)).append(";")
-                .append(date.get(GregorianCalendar.MINUTE)).append(";")
+        line.append(id).append(ELEMENTS_SEPARATOR)
+                .append(origin).append(ELEMENTS_SEPARATOR)
+                .append(destiny).append(ELEMENTS_SEPARATOR)
+                .append(date.get(GregorianCalendar.YEAR)).append(ELEMENTS_SEPARATOR)
+                .append(date.get(GregorianCalendar.MONTH)).append(ELEMENTS_SEPARATOR)
+                .append(date.get(GregorianCalendar.DAY_OF_MONTH)).append(ELEMENTS_SEPARATOR)
+                .append(date.get(GregorianCalendar.HOUR_OF_DAY)).append(ELEMENTS_SEPARATOR)
+                .append(date.get(GregorianCalendar.MINUTE)).append(ELEMENTS_SEPARATOR)
                 .append(seatsDistribution);
         printWriter.println(line);
     }
@@ -189,10 +190,10 @@ public class Travel implements Storable {
      */
     public void saveTravelStatus(PrintWriter printWriter){
         StringBuilder line = new StringBuilder();
-        line.append(id).append(";");
+        line.append(id).append(ELEMENTS_SEPARATOR);
         for(int i = 1; i < seats.length; i++){
             if(seats[i] != null) {
-                line.append(seats[i].getSeat()).append("-").append(seats[i].getPassengerID()).append(";");
+                line.append(seats[i].getSeat()).append("-").append(seats[i].getPassengerID()).append(ELEMENTS_SEPARATOR);
             }
         }
         printWriter.println(line);

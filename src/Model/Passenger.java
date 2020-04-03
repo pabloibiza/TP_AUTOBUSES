@@ -17,6 +17,7 @@ public class Passenger implements Storable {
     private String dni;
     private String name;
     private String surname;
+    private static final String ELEMENTS_SEPARATOR = ",";
 
     /**
      * Constructor method.
@@ -37,7 +38,7 @@ public class Passenger implements Storable {
      * @param line String
      */
     public Passenger(@NotNull String line) {
-        String[] elements = line.split(";");
+        String[] elements = line.split(ELEMENTS_SEPARATOR);
         this.dni = elements[0];
         this.name = elements[1];
         this.surname = elements[2];
@@ -59,7 +60,7 @@ public class Passenger implements Storable {
      */
     @Override
     public String toString(){
-        return dni + ";" + name + ";" + surname;
+        return dni + ELEMENTS_SEPARATOR + name + ELEMENTS_SEPARATOR + surname;
     }
 
 
