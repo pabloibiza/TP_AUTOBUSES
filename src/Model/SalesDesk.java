@@ -1,7 +1,7 @@
 /*
- * Type class Model.Office. Contains the methods to manage the passengers and travels.
+ * Type class Model.SalesDesk. Contains the methods to manage the passengers and travels.
  *
- * Model.Office.java
+ * Model.SalesDesk.java
  *
  * @version 2.1
  * @author Pablo Sanz Alguacil
@@ -16,7 +16,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 
-public class Office {
+public class SalesDesk {
     private static Collection<Passenger> passengers;
     private static Collection<Travel> travels;
     private static final String ELEMENTS_SEPARATOR = ",";
@@ -24,7 +24,7 @@ public class Office {
     /**
      * Constructor method. Creates an empty office.
      */
-    public Office() {
+    public SalesDesk() {
         passengers = new ArrayList<>();
         travels = new ArrayList<>();
     }
@@ -35,7 +35,7 @@ public class Office {
      * @param travelsFile String
      * @param travelsStatusFile String
      */
-    public Office(String passengersFile, String travelsFile, String travelsStatusFile) {
+    public SalesDesk(String passengersFile, String travelsFile, String travelsStatusFile) {
         passengers = new ArrayList<>();
         travels = new ArrayList<>();
         readTravels(travelsFile);
