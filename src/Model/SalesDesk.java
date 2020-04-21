@@ -12,14 +12,19 @@ package Model;
 import com.sun.istack.internal.NotNull;
 
 import java.io.*;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
+import java.util.*;
 
 public class SalesDesk {
     private static Collection<Passenger> passengers;
     private static Collection<Travel> travels;
     private static final String ELEMENTS_SEPARATOR = ",";
+    private static final String COLON = ": ";
+    private static final String ORIGIN = "ORIGIN";
+    private static final String DESTINY = "DESTINY";
+    private static final String DATE = "DATE";
+    private static final String SEATS_PLAN = "SEATS_PLAN";
+    private static final String SEAT = "SEAT ";
+    private static final String ROUTE_SHEET_FILE_ESXTENSION = ".txt";
 
     /**
      * Constructor method. Creates an empty office.
@@ -63,7 +68,7 @@ public class SalesDesk {
      * @return boolean
      */
     public boolean addTravel (Travel travel) {
-        if(searchTravel(travel.getId()) == null){
+        if(searchTravel(travel.getId()) == null) {
             travels.add(travel);
             return true;
         }
@@ -76,8 +81,12 @@ public class SalesDesk {
      * @param passenger Model.Passenger
      * @return boolean
      */
-    public void deletePassenger (Passenger passenger) {
-        passengers.remove(passenger);
+    public boolean deletePassenger (Passenger passenger) {
+        if(searchPassenger(passenger.getDni()) != null) {
+            passengers.remove(passenger);
+            return true;
+        }
+        return false;
     }
 
 
@@ -86,8 +95,12 @@ public class SalesDesk {
      * @param travel Model.Travel
      * @return boolean
      */
-    public void deleteTravel (Travel travel) {
-        travels.remove(travel);
+    public boolean deleteTravel (Travel travel) {
+        if(searchTravel(travel.getId()) != null) {
+            travels.remove(travel);
+            return true;
+        }
+        return false;
     }
 
 
@@ -233,24 +246,30 @@ public class SalesDesk {
      * @param travel Model.Travel
      * @return String Builder
      */
-    public StringBuilder viewTravelSheet(Travel travel){
+    public void generateTravelSheet(Travel travel) {
         StringBuilder plan = new StringBuilder();
-        plan.append("ORIGEN: ").append(travel.getOrigin()).append("\n");
-        plan.append("DESTINO: ").append(travel.getDestiny()).append("\n");
-        plan.append("FECHA: ").append(travel.getDateToPrint()).append("\n");
-        plan.append("PLAN DE ASIENTOS: ").append(travel.getSeatsDistribution()).append("\n\n");
-
+        plan.append(ORIGIN).append(COLON).append(travel.getOrigin()).append("\n");
+        plan.append(DESTINY).append(COLON).append(travel.getDestiny()).append("\n");
+        plan.append(DATE).append(COLON).append(travel.getDateToPrint()).append("\n");
+        plan.append(SEATS_PLAN).append(COLON).append(travel.getSeatsDistribution()).append("\n\n");
         plan.append(seatsStatus(travel));
-
         plan.append("\n\n");
 
         for(int i = 0; i < travel.getSeatsNumber(); i++) {
             if(!travel.isSeatFree(i)) {
-                plan.append("ASIENTO ").append(i).append(": ").append(whoIsSited(travel, i)).append("\n");
+                plan.append(SEAT).append(i).append(COLON).append(whoIsSited(travel, i)).append("\n");
             }
         }
 
-        return plan;
+        String name = travel.getId() + ROUTE_SHEET_FILE_ESXTENSION;
+        PrintWriter file = null;
+        try {
+            file = new PrintWriter( new BufferedWriter( new FileWriter(name)));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        file.println(plan);
+        file.close();
     }
 
 
@@ -408,5 +427,30 @@ public class SalesDesk {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+
+    /**
+     * Searches the travels for a concrete date.
+     * @param date String
+     * @return Collection LinkedList
+     */
+    public ArrayList searchTravelsPerDate(GregorianCalendar date){
+        ArrayList foundTravels = new ArrayList();
+        int day = date.get(GregorianCalendar.DAY_OF_MONTH);
+        int month = date.get(GregorianCalendar.MONTH);
+        int year = date.get(GregorianCalendar.YEAR);
+
+        Iterator it = travels.iterator();
+        while(it.hasNext()) {
+            Travel element = (Travel) it.next();
+            if(element != null &&
+                    element.getDay() == day &&
+                    element.getMonth() == month &&
+                    element.getYear() == year) {
+                foundTravels.add(element);
+            }
+        }
+        return foundTravels;
     }
 }

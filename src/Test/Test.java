@@ -10,11 +10,9 @@
 package Test;
 
 import Control.Office;
-import Control.OyenteVista;
 import Model.SalesDesk;
 import Model.Passenger;
 import Model.Travel;
-import View.MainFrame;
 
 import java.io.IOException;
 import java.util.Calendar;
@@ -52,6 +50,7 @@ public class Test {
         Travel modifiedTravel3 = new Travel("3", "ZARAGOZA", "VALENCIA",
                 new GregorianCalendar(2020, Calendar.MARCH, 19, 11, 0),
                 "4x12");
+
 
 
         System.out.println("~~~SE AÑADEN LOS PASAJEROS Y VIAJES~~~");
@@ -114,7 +113,7 @@ public class Test {
 
 
         //SE IMPRIME LA HOJA DE RUTA DEL VIAJE 1
-        System.out.println(salesDesk.viewTravelSheet(travel1));
+        salesDesk.generateTravelSheet(travel1);
 
 
 

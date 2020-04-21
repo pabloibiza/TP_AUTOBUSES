@@ -1,0 +1,30 @@
+ * Generates a StringBuilder containing the route, date, and hour of the selected travel.
+ * @return StringBuilder
+ *
+public StringBuilder getSelectedTravel(){
+    StringBuilder result = new StringBuilder();
+    String selectedTravel = (String) travelsComboBox.getSelectedItem();
+
+    String[] placesHourId = selectedTravel.split(" ");
+    String[] originDestiny = placesHourId[0].split("-");
+    String[] hourMinute = placesHourId[1].split(":");
+
+    String origin = originDestiny[0];
+    String destiny = originDestiny[1];
+    String hour = hourMinute[0];
+    String minute = hourMinute[1];
+
+    String[] date = selectedDate.split(",");
+
+    result.append(placesHourId[4]).append(",")
+            .append(origin).append(",")
+            .append(destiny).append(",")
+            .append(date[2]).append(",")
+            .append(date[1]).append(",")
+            .append(date[0]).append(",")
+            .append(hour).append(",")
+            .append(minute);
+
+    return result;
+
+}

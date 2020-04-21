@@ -11,6 +11,7 @@ package Model;
 
 import com.sun.istack.internal.NotNull;
 import java.io.PrintWriter;
+import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.Objects;
 
@@ -23,6 +24,8 @@ public class Travel implements Storable {
     private Pair[] seats;
     private String seatsDistribution;
     private static final String ELEMENTS_SEPARATOR = ",";
+    private static final String DISTRIBUTION_SEPARATOR = "x";
+    private static final String DNI_SEAT_SEPARATOR = "-";
 
     /**
      * Constructor method.
@@ -39,7 +42,7 @@ public class Travel implements Storable {
         this.date = date;
         this.seatsDistribution = seatsDistribution;
 
-        String[] distribution = seatsDistribution.split("x");
+        String[] distribution = seatsDistribution.split(DISTRIBUTION_SEPARATOR);
         seatsNumber = Integer.parseInt(distribution[0]) * Integer.parseInt(distribution[1]);
         seats = new Pair[seatsNumber + 1];
     }
@@ -57,7 +60,7 @@ public class Travel implements Storable {
         date = readGregorianCalendar(line);
         seatsDistribution = tokens[8];
 
-        String[] distribution = seatsDistribution.split("x");
+        String[] distribution = seatsDistribution.split(DISTRIBUTION_SEPARATOR);
         seatsNumber = Integer.parseInt(distribution[0]) * Integer.parseInt(distribution[1]);
         seats = new Pair[seatsNumber + 1];
     }
@@ -102,6 +105,49 @@ public class Travel implements Storable {
      */
     public String getDestiny(){
         return destiny;
+    }
+
+
+    /**
+     * Returns the day.
+     * @return Integer
+     */
+    public int getDay(){
+        return date.get(Calendar.DAY_OF_MONTH);
+    }
+
+
+    /**
+     * Returns the month.
+     * @return Integer
+     */
+    public int getMonth(){
+        return date.get(Calendar.MONTH);
+    }
+
+
+    /**
+     * Returns the year.
+     * @return Integer
+     */
+    public int getYear(){
+        return date.get(Calendar.YEAR);
+    }
+
+    /**
+     * Returns the hour.
+     * @return Integer
+     */
+    public int getHour(){
+        return date.get(Calendar.HOUR_OF_DAY);
+    }
+
+    /**
+     * Returns the minutes.
+     * @return Integer
+     */
+    public int getMinute(){
+        return date.get(Calendar.MINUTE);
     }
 
 
@@ -155,7 +201,9 @@ public class Travel implements Storable {
      */
     @Override
     public String toString() {
-        return id + ELEMENTS_SEPARATOR + origin + ELEMENTS_SEPARATOR + destiny + ELEMENTS_SEPARATOR +
+        return id + ELEMENTS_SEPARATOR +
+                origin + ELEMENTS_SEPARATOR +
+                destiny + ELEMENTS_SEPARATOR +
                 date.get(GregorianCalendar.DAY_OF_MONTH) + ELEMENTS_SEPARATOR +
                 date.get(GregorianCalendar.MONTH) + ELEMENTS_SEPARATOR +
                 date.get(GregorianCalendar.YEAR) + ELEMENTS_SEPARATOR +
@@ -193,7 +241,7 @@ public class Travel implements Storable {
         line.append(id).append(ELEMENTS_SEPARATOR);
         for(int i = 1; i < seats.length; i++){
             if(seats[i] != null) {
-                line.append(seats[i].getSeat()).append("-").append(seats[i].getPassengerID()).append(ELEMENTS_SEPARATOR);
+                line.append(seats[i].getSeat()).append(DNI_SEAT_SEPARATOR).append(seats[i].getPassengerID()).append(ELEMENTS_SEPARATOR);
             }
         }
         printWriter.println(line);
