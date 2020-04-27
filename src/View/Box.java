@@ -26,19 +26,19 @@ public class Box extends JButton {
     }
 
     public Box () {
-        this.setBackground(Color.GRAY);
+
     }
 
 
     public void setAssigned(String newDni) {
         dni = newDni;
         isOccupied = true;
-        this.setBackground(Color.DARK_GRAY);
+        this.setForeground(Color.BLUE);
     }
 
     public void setUnassigned(){
         dni = "";
         isOccupied = false;
-        this.setBackground(Color.GREEN);
+        this.setForeground(Color.GREEN);
     }
 }
