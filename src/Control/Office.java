@@ -161,6 +161,7 @@ public class Office implements ViewListener {
      */
     private void viewSeats(String id){
         mainFrame.setSelectedTravel(id);
+        mainFrame.updateBusMatrix(salesDesk.searchTravel(id));
     }
 
 

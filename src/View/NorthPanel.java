@@ -48,7 +48,7 @@ public class NorthPanel extends JPanel {
     /**
      * Builds the panel.
      */
-    public void buildPanel() {
+    private void buildPanel() {
         travelsLabel = new JLabel(ROUTES, SwingConstants.RIGHT);
         travelsComboBox = new JComboBox();
         viewSeatsButton = new JButton(VIEW_SEATS_BUTTON);

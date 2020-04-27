@@ -41,7 +41,7 @@ public class SouthPanel extends JPanel {
     /**
      * Builds the panel.
      */
-    public void buildPanel(){
+    private void buildPanel(){
         assignButton = new JButton(ASSIGN);
         routeSheetButton = new JButton(GENERATE_ROUTE_SHEET);
         this.add(assignButton);

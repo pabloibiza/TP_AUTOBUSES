@@ -10,7 +10,7 @@
 package View;
 
 import Control.ViewListener;
-import sun.util.calendar.Gregorian;
+import Model.Travel;
 
 import javax.swing.*;
 import java.awt.*;
@@ -28,6 +28,7 @@ public class MainFrame extends JFrame{
     private WestPanel westPanel;
     private NorthPanel northPanel;
     private SouthPanel southPanel;
+    private CentralPanel centralPanel;
 
     private GregorianCalendar selectedDate;
     private String selectedTravel = "";
@@ -47,7 +48,10 @@ public class MainFrame extends JFrame{
         this.add(southPanel, BorderLayout.SOUTH);
         southPanel.enableDisableButtons(false);
 
-        this.add(new JButton("Solo estoy ocupando espacio"), BorderLayout.CENTER);
+        centralPanel = new CentralPanel(viewListener);
+        this.add(centralPanel, BorderLayout.CENTER);
+
+        //this.add(new JButton("Solo estoy ocupando espacio"), BorderLayout.CENTER);
         setVisible(true);
 
     }
@@ -145,5 +149,14 @@ public class MainFrame extends JFrame{
      */
     public void errorMessage(String message){
         JOptionPane.showMessageDialog(this, message, ERROR_WINDOW_TITLE, JOptionPane.ERROR_MESSAGE);
+    }
+
+
+    /**
+     * Builds the seats matrix for a given travel
+     * @param travel Travel
+     */
+    public void updateBusMatrix (Travel travel) {
+        centralPanel.updateMatrix(travel);
     }
 }

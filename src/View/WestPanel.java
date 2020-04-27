@@ -61,7 +61,7 @@ public class WestPanel extends JPanel {
     /**
      * Builds the panel.
      */
-    public void buildPanel(){
+    private void buildPanel(){
         yearPanel = new JPanel();
         monthPanel = new JPanel();
         dayPanel = new JPanel();
@@ -163,7 +163,7 @@ public class WestPanel extends JPanel {
      * @param year Integer
      * @return Integer
      */
-    public static int daysInMonth(int month, int year) {
+    private static int daysInMonth(int month, int year) {
         GregorianCalendar calendar = new GregorianCalendar(year, month, 1);
         return calendar.getActualMaximum(Calendar.DAY_OF_MONTH);
     }

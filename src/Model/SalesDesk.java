@@ -9,8 +9,6 @@
 
 package Model;
 
-import com.sun.istack.internal.NotNull;
-
 import java.io.*;
 import java.util.*;
 
@@ -25,6 +23,7 @@ public class SalesDesk {
     private static final String SEATS_PLAN = "SEATS_PLAN";
     private static final String SEAT = "SEAT ";
     private static final String ROUTE_SHEET_FILE_ESXTENSION = ".txt";
+    private static final String  SHEET_NAME_TEXT = "_ROUTE_SHEET";
 
     /**
      * Constructor method. Creates an empty office.
@@ -182,7 +181,6 @@ public class SalesDesk {
             Passenger element = (Passenger) it.next();
             passengersList.append(element.toString()).append("\n");
         }
-
         return passengersList;
     }
 
@@ -261,7 +259,7 @@ public class SalesDesk {
             }
         }
 
-        String name = travel.getId() + ROUTE_SHEET_FILE_ESXTENSION;
+        String name = travel.getId()+ SHEET_NAME_TEXT + ROUTE_SHEET_FILE_ESXTENSION;
         PrintWriter file = null;
         try {
             file = new PrintWriter( new BufferedWriter( new FileWriter(name)));
@@ -329,7 +327,7 @@ public class SalesDesk {
      * @param collection Collection
      * @throws IOException
      */
-    private void save (String fileName, @NotNull Collection collection) throws IOException {
+    private void save (String fileName, Collection collection) throws IOException {
         PrintWriter file = new PrintWriter( new BufferedWriter( new FileWriter(fileName)));
 
         Iterator it = collection.iterator();

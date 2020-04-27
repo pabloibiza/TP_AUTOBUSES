@@ -1,0 +1,28 @@
+indice_asientos = 1
+ultimo_hueco_pasillo = 0
+casillas = new Casilla[filas][columnas];
+
+
+
+asientos_izq = (numero_asientos_fila / 2) + (numero_asientos_fila % 2)
+asientos_der = numero_asientos_fila / 2
+columnas_por_lado = numero_asientos_fila / 2
+saltos_hueco_pasillo = asientos_izq + asientos_der + 1
+
+
+
+for(int fil = 1; fil <= filas; fil++)
+    for(int col = 1; col <= columnas; col++)
+        si indice_asientos == numero_asientos_fila + 1
+            IMPRIMIR CASILLA VACIA
+            ultimo_hueco_pasillo = indice_asientos
+
+        si indice_asientos == (ultimo_hueco_pasillo + saltos_hueco_pasillo)
+            IMPRIMIR CASILLA VACIA
+            ultimo_hueco_pasillo = idice asientos
+
+        sino
+            IMPRIMIR CASILLA (indice_asientos)
+            casillas[fil][col] = new Casilla(indice_asientos)
+            #Comprueba en el viaje si el asiento esta libre, y en caso afirmativo
+            lo pinta como ocupado.

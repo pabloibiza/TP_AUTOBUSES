@@ -9,7 +9,6 @@
 
 package Model;
 
-import com.sun.istack.internal.NotNull;
 import java.io.PrintWriter;
 import java.util.Objects;
 
@@ -37,7 +36,7 @@ public class Passenger implements Storable {
      * separated by ";" for each element.
      * @param line String
      */
-    public Passenger(@NotNull String line) {
+    public Passenger(String line) {
         String[] elements = line.split(ELEMENTS_SEPARATOR);
         this.dni = elements[0];
         this.name = elements[1];

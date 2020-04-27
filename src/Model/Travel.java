@@ -9,7 +9,6 @@
 
 package Model;
 
-import com.sun.istack.internal.NotNull;
 import java.io.PrintWriter;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
@@ -52,7 +51,7 @@ public class Travel implements Storable {
      * data separated by ";" for each element.
      * @param line String
      */
-    public Travel(@NotNull String line) {
+    public Travel(String line) {
         String[] tokens = line.split(ELEMENTS_SEPARATOR);
         id = tokens[0];
         origin = tokens[1];
@@ -233,7 +232,7 @@ public class Travel implements Storable {
 
 
     /**
-     * Saves the travel status throw the recieved PrintWriter.
+     * Saves the travel status throw the received PrintWriter.
      * @param printWriter PrintWriter
      */
     public void saveTravelStatus(PrintWriter printWriter){
@@ -252,7 +251,7 @@ public class Travel implements Storable {
      * Assigns a seat to a received passenger (only DNI). Returns true in case of success.
      * @param seat Integer
      * @param passengerID String
-     * @return booean
+     * @return boolean
      */
     public boolean assignSeat(int seat, String passengerID){
             if(seats[seat] == null){
