@@ -60,7 +60,7 @@ public class Travel implements Storable {
         seatsDistribution = tokens[8];
 
         String[] distribution = seatsDistribution.split(DISTRIBUTION_SEPARATOR);
-        seatsNumber = Integer.parseInt(distribution[0]) * Integer.parseInt(distribution[1]);
+        seatsNumber = Integer.parseInt(distribution[0]) * Integer.parseInt(distribution[1]) + 1;
         seats = new Pair[seatsNumber + 1];
     }
 

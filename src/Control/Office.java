@@ -25,11 +25,11 @@ public class Office implements ViewListener {
     private static final String SUCCESSFUL_ROUTE_GENERATED = "Route sheet generated successfuly";
     private static final String ERROR_SAVING_PASSENGERS = "Error while saving changes to passengers file";
     private static final String ERROR_SAVING_TRAVELS = "Error while saving changes to travels file";
+    private static final String ERROR_SAVING_TRAVELS_STATUS = "Error while saving changes to travels status file";
     private static final String TRAVEL_NOT_EXISTANT = "Travel doesn't exists";
     private static final String PASSENGER_NOT_EXISTANT = "Passenger doesn't exists";
     private static final String PASSENGER_ALREADY_EXISTS = "Passenger already exists";
     private static final String TRAVEL_ALREADY_ADDED = "Travel already added";
-    private static final String ELEMENTS_SEPARATOR = ",";
 
     private SalesDesk salesDesk;
     private MainFrame mainFrame;
@@ -132,10 +132,10 @@ public class Office implements ViewListener {
 
     /**
      * Deletes a passenger and saves all passengers.
-     * @param passenger Passenger
+     * @param id String
      */
-    private void deletePassenger(Passenger passenger){
-        if(!salesDesk.deletePassenger(passenger)){
+    private void deletePassenger(String id){
+        if(!salesDesk.deletePassenger(salesDesk.searchPassenger(id))){
             errorMessage(PASSENGER_NOT_EXISTANT, null);
         };
         try {
@@ -186,6 +186,27 @@ public class Office implements ViewListener {
         Passenger passenger = salesDesk.searchPassenger(assignationData[1]);
         int seat = Integer.parseInt(assignationData[2]);
         salesDesk.assignSeat(travel, passenger, seat);
+        try {
+            salesDesk.saveTravelsStatus(TRAVELS_STATUS_FILE_PATH);
+        } catch (IOException e) {
+            errorMessage(ERROR_SAVING_TRAVELS_STATUS, e);
+        }
+    }
+
+
+    /**
+     * Unassigns a seat for a passenger.
+     * @param unassignationData String[] [travel, seat]
+     */
+    private void unassignSeat(String[] unassignationData) {
+        Travel travel = salesDesk.searchTravel(unassignationData[0]);
+        int seat = Integer.parseInt(unassignationData[1]);
+        salesDesk.unassignSeat(travel, seat);
+        try {
+            salesDesk.saveTravelsStatus(TRAVELS_STATUS_FILE_PATH);
+        } catch (IOException e) {
+            errorMessage(ERROR_SAVING_TRAVELS_STATUS, e);
+        }
     }
 
 
@@ -210,7 +231,7 @@ public class Office implements ViewListener {
                 break;
 
             case DELETE_PASSENGER:
-                deletePassenger((Passenger) object);
+                deletePassenger((String) object);
                 break;
 
             case EXIT:
@@ -230,7 +251,7 @@ public class Office implements ViewListener {
                 break;
 
             case UNASSIGN:
-                mainFrame.infoMessage("Seat unassigned");
+                unassignSeat((String[]) object);
                 break;
 
             case GENERATE_ROUTE_SHEET:

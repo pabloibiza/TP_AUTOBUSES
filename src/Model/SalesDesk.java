@@ -374,7 +374,6 @@ public class SalesDesk {
             Travel element = (Travel) it.next();
             element.saveTravelStatus(file);
         }
-
         file.close();
     }
 

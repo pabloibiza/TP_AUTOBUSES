@@ -10,6 +10,7 @@
 package View;
 
 import Control.ViewListener;
+import Model.Passenger;
 import Model.Travel;
 
 import javax.swing.*;
@@ -49,7 +50,7 @@ public class MainFrame extends JFrame{
         this.add(southPanel, BorderLayout.SOUTH);
         southPanel.enableDisableButtons(false);
 
-        centralPanel = new CentralPanel(this, viewListener);
+        centralPanel = new CentralPanel(this);
         this.add(centralPanel, BorderLayout.CENTER);
 
         setVisible(true);
@@ -171,7 +172,10 @@ public class MainFrame extends JFrame{
      * Sets the selected seat.
      * @param newSeat Integer
      */
-    public void setSelectedSeat(Box newSeat){
+    public void setSelectedSeat(Box newSeat) {
+        if (selectedSeat != null) {
+            selectedSeat.deselect();
+        }
         selectedSeat = newSeat;
         if(newSeat.isOccupied()){
             southPanel.changeToUnassign();
@@ -190,11 +194,26 @@ public class MainFrame extends JFrame{
     }
 
 
+    /**
+     * Assigns a seat on a travel for a passenger.
+     */
     public void assignSeat(){
-        viewListener.producedEvent(ViewListener.Event.ASSIGN, null);
+        //Implementar ventana para introducir datos del pasajero
+        Passenger newPassenger = new Passenger("99999999Z", "Nombre", "Apellido"); //Aqui se reciven los datos de la ventana emergente
+        viewListener.producedEvent(ViewListener.Event.NEW_PASSENGER, newPassenger);
+        String assignationData[] = {getSelectedTravel(), newPassenger.getDni(), String.valueOf(getSelectedSeat().getSeatNumber())};
+        viewListener.producedEvent(ViewListener.Event.ASSIGN, assignationData);
+        getSelectedSeat().setAssigned(newPassenger.getDni());
+        southPanel.changeToUnassign();
     }
 
-    public void unAssignSeat(int seatNumber){
-        viewListener.producedEvent(ViewListener.Event.UNASSIGN, null);
+
+    public void unassignSeat() {
+        String unassignationData[] = {getSelectedTravel(), String.valueOf(getSelectedSeat().getSeatNumber())};
+        viewListener.producedEvent(ViewListener.Event.DELETE_PASSENGER, getSelectedSeat().getDni());
+        viewListener.producedEvent(ViewListener.Event.UNASSIGN, unassignationData);
+        getSelectedSeat().setUnassigned();
+        southPanel.changeToAssign();
     }
+
 }

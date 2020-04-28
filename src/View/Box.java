@@ -49,6 +49,7 @@ public class Box extends JButton {
         this.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                select();
                 mainFrame.setSelectedSeat(box);
             }
         });
@@ -60,6 +61,7 @@ public class Box extends JButton {
      */
     public Box () {
         this.setEnabled(false);
+        this.setVisible(false);
     }
 
     /**
@@ -69,7 +71,7 @@ public class Box extends JButton {
     public void setAssigned(String newDni) {
         dni = newDni;
         inUse = true;
-        this.setForeground(Color.BLUE);
+        this.setForeground(Color.RED);
     }
 
 
@@ -79,7 +81,7 @@ public class Box extends JButton {
     public void setUnassigned(){
         dni = "";
         inUse = false;
-        this.setForeground(Color.GREEN);
+        this.setForeground(Color.BLUE);
     }
 
 
@@ -94,9 +96,37 @@ public class Box extends JButton {
 
     /**
      * Returns the seat number.
-     * @return
+     * @return Integer
      */
     public int getSeatNumber(){
         return seatNumber;
+    }
+
+
+    /**
+     * Returns the dni.
+     * @return String
+     */
+    public String getDni(){
+        return dni;
+    }
+
+
+    /**
+     * Selects the button.
+     */
+    public void select(){
+        setBackground(Color.YELLOW);
+        setOpaque(true);
+        setBorderPainted(true);
+    }
+
+
+    /**
+     * Deselects the button.
+     */
+    public void deselect() {
+        setBackground(new JButton().getBackground());
+        setOpaque(false);
     }
 }

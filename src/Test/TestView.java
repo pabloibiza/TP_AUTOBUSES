@@ -24,7 +24,7 @@ public class TestView {
     private static final String TRAVELS_STATUS_FILE_PATH = "src/storage/travels/status.csv";
 
     public static void main(String[] args) throws IOException {
-        SalesDesk salesDesk = new SalesDesk();
+        SalesDesk salesDesk = new SalesDesk(PASSENGERS_FILE_PATH, TRAVELS_FILE_PATH, TRAVELS_STATUS_FILE_PATH);
         Office office = new Office(salesDesk);
 
 
@@ -40,7 +40,7 @@ public class TestView {
                 "5x12");
         Travel travel4 = new Travel("4", "MADRID", "SANTANDER",
                 new GregorianCalendar(2020, 03, 1, 11, 0),
-                "3x15");
+                "3x7");
         Travel travel5 = new Travel("5", "ZARAGOZA", "TERUEL",
                 new GregorianCalendar(2020, 03, 1, 8, 0),
                 "4x12");
@@ -88,7 +88,7 @@ public class TestView {
         salesDesk.assignSeat(travel1, passenger2, 6);
         salesDesk.assignSeat(travel1, passenger4, 30);
         salesDesk.assignSeat(travel1, passenger5, 42);
-        if(!salesDesk.assignSeat(travel1, passenger1,59)) System.out.println("Asiento no disponible");
+        salesDesk.assignSeat(travel1, passenger1,59);
 
     }
 }

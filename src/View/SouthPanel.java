@@ -54,22 +54,14 @@ public class SouthPanel extends JPanel {
         assignButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                //Implementar ventana para introducir datos del pasajero
-                mainFrame.infoMessage("AQUI SE INTRODUCEN LOS DATOS DEL PASAJERO");
-                Passenger newPassenger = null; //Aqui se reciven los datos de la ventana emergente
-                viewListener.producedEvent(ViewListener.Event.NEW_PASSENGER, newPassenger);
-                String assignationData[] = {mainFrame.getSelectedTravel(), newPassenger.getDni(), String.valueOf(mainFrame.getSelectedSeat().getSeatNumber())};
-                viewListener.producedEvent(ViewListener.Event.ASSIGN, assignationData);
-
+                mainFrame.assignSeat();
             }
         });
 
         unAssignButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                mainFrame.infoMessage("ASIENTO DESASIGNADO");
-                viewListener.producedEvent(ViewListener.Event.DELETE_PASSENGER, null);
-                viewListener.producedEvent(ViewListener.Event.UNASSIGN, null);
+                mainFrame.unassignSeat();
             }
         });
 
