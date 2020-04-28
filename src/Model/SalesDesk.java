@@ -9,6 +9,8 @@
 
 package Model;
 
+import View.Box;
+
 import java.io.*;
 import java.util.*;
 
@@ -16,6 +18,7 @@ public class SalesDesk {
     private static Collection<Passenger> passengers;
     private static Collection<Travel> travels;
     private static final String ELEMENTS_SEPARATOR = ",";
+    private static final String DISTRIBUTION_SEPARATOR = "x";
     private static final String COLON = ": ";
     private static final String ORIGIN = "ORIGIN";
     private static final String DESTINY = "DESTINY";
@@ -24,6 +27,7 @@ public class SalesDesk {
     private static final String SEAT = "SEAT ";
     private static final String ROUTE_SHEET_FILE_ESXTENSION = ".txt";
     private static final String  SHEET_NAME_TEXT = "_ROUTE_SHEET";
+    private static final String[] COLUMNS_DESIGNATION = {"A", "B", "C", "D", "E", "F"};
 
     /**
      * Constructor method. Creates an empty office.
@@ -277,23 +281,41 @@ public class SalesDesk {
      * @return StringBuilder
      */
     public StringBuilder seatsStatus(Travel travel) {
-        int indexSeats = 1;
-        String[] distribution = travel.getSeatsDistribution().split("x");
-        int seatsPerRow = Integer.parseInt(distribution[0]);
-        int rows = Integer.parseInt(distribution[1]);
+        int cols = Integer.parseInt(travel.getSeatsDistribution().split(DISTRIBUTION_SEPARATOR)[0]) + 1;
+        int rows = Integer.parseInt(travel.getSeatsDistribution().split(DISTRIBUTION_SEPARATOR)[1]);
+        int seatsIndex = 1;
+        int corridorColumn = (((cols - 1) / 2) + ((cols - 1) % 2));
+        String corridorGaps = "     ";
         StringBuilder plan = new StringBuilder();
 
-        plan.append("_____" + "__A__B____C__D__\n");
-        for(int i = 0; i < rows; i++) {
-            plan.append(String.format("%02d", i + 1)).append(" ").append("| ");
-            for (int j = 1; j <= seatsPerRow; j++) {
-                if (travel.isSeatFree(indexSeats)) {
-                    plan.append(" ").append(String.format("%02d", indexSeats));
+        plan.append("_____");
+        for(int i = 0; i < cols; i++){
+            if (i < corridorColumn) {
+                plan.append("____");
+                plan.append(COLUMNS_DESIGNATION[i]);
+            } else if (i > corridorColumn) {
+                plan.append(COLUMNS_DESIGNATION[i - 1]);
+                plan.append("____");
+            } else {
+                plan.append("_________");
+            }
+        }
+        plan.append("\n");
+        for(int row = 0; row < rows; row++) {
+            plan.append("_").append(String.format("%02d", row + 1)).append("_").append("| ");
+            for (int col = 0; col < cols; col++) {
+                if (col == corridorColumn && row != (rows - 1)) { //Corridor
+                    plan.append(corridorGaps);
+                } else if((row == (rows/2)) && (col > corridorColumn)) { //Back door
+                    plan.append("  ");
                 } else {
-                    plan.append(" " + " .");
+                    if (travel.isSeatFree(seatsIndex)) {
+                        plan.append(" ").append(" ").append(String.format("%02d", seatsIndex)).append(" ");
+                    } else {
+                        plan.append(" ").append("(").append(String.format("%02d", seatsIndex)).append(")");
+                    }
+                    seatsIndex++;
                 }
-                if (j == 2) plan.append("  ");
-                indexSeats++;
             }
             plan.append("\n");
         }

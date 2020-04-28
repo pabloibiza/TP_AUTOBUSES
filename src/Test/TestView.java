@@ -30,31 +30,31 @@ public class TestView {
 
         //CREACIONDE VIAJES
         Travel travel1 = new Travel("1", "MADRID", "BARCELONA",
-                new GregorianCalendar(2020, 02, 1, 14, 0),
+                new GregorianCalendar(2020, 03, 1, 14, 0),
                 "4x12");
         Travel travel2 = new Travel("2","MADRID", "ZARAGOZA",
-                new GregorianCalendar(2020, 02, 1, 21, 30),
+                new GregorianCalendar(2020, 03, 1, 21, 30),
                 "4x12");
         Travel travel3 = new Travel("3", "MADRID", "TERUEL",
-                new GregorianCalendar(2020, 02, 1, 9, 0),
-                "4x12");
+                new GregorianCalendar(2020, 03, 1, 9, 0),
+                "5x12");
         Travel travel4 = new Travel("4", "MADRID", "SANTANDER",
-                new GregorianCalendar(2020, 02, 1, 11, 0),
-                "4x12");
+                new GregorianCalendar(2020, 03, 1, 11, 0),
+                "3x15");
         Travel travel5 = new Travel("5", "ZARAGOZA", "TERUEL",
-                new GregorianCalendar(2020, 02, 1, 8, 0),
+                new GregorianCalendar(2020, 03, 1, 8, 0),
                 "4x12");
         Travel travel6 = new Travel("6", "ZARAGOZA", "VALENCIA",
-                new GregorianCalendar(2020, 02, 1, 23, 4),
+                new GregorianCalendar(2020, 03, 1, 23, 4),
                 "4x12");
         Travel travel7 = new Travel("7", "ZARAGOZA", "VALENCIA",
-                new GregorianCalendar(2020, 02, 1, 22, 01),
+                new GregorianCalendar(2020, 03, 1, 22, 01),
                 "4x12");
         Travel travel8 = new Travel("8", "ZARAGOZA", "VALENCIA",
-                new GregorianCalendar(2020, 02, 1, 23, 15),
+                new GregorianCalendar(2020, 03, 1, 23, 15),
                 "4x12");
         Travel travel9 = new Travel("9", "ZARAGOZA", "VALENCIA",
-                new GregorianCalendar(2020, 02, 1, 22, 15),
+                new GregorianCalendar(2020, 03, 1, 22, 15),
                 "4x12");
 
 

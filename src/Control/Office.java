@@ -29,6 +29,7 @@ public class Office implements ViewListener {
     private static final String PASSENGER_NOT_EXISTANT = "Passenger doesn't exists";
     private static final String PASSENGER_ALREADY_EXISTS = "Passenger already exists";
     private static final String TRAVEL_ALREADY_ADDED = "Travel already added";
+    private static final String ELEMENTS_SEPARATOR = ",";
 
     private SalesDesk salesDesk;
     private MainFrame mainFrame;
@@ -177,6 +178,18 @@ public class Office implements ViewListener {
 
 
     /**
+     * Assigns a seat for a passenger on a travel.
+     * @param assignationData String[] [travel,passenger,seat]
+     */
+    private void assignSeat(String[] assignationData) {
+        Travel travel = salesDesk.searchTravel(assignationData[0]);
+        Passenger passenger = salesDesk.searchPassenger(assignationData[1]);
+        int seat = Integer.parseInt(assignationData[2]);
+        salesDesk.assignSeat(travel, passenger, seat);
+    }
+
+
+    /**
      * Produced events manager.
      * @param event Event
      * @param object Object
@@ -213,7 +226,11 @@ public class Office implements ViewListener {
                 break;
 
             case ASSIGN:
-                mainFrame.infoMessage("Seat assigned");
+                assignSeat((String[]) object);
+                break;
+
+            case UNASSIGN:
+                mainFrame.infoMessage("Seat unassigned");
                 break;
 
             case GENERATE_ROUTE_SHEET:

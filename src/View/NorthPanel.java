@@ -20,16 +20,12 @@ import java.util.*;
 
 public class NorthPanel extends JPanel {
     private static final String ROUTES = "ROUTES:";
-    private static final String VIEW_SEATS_BUTTON = "View seats";
     private static final String TEXT_SPACER = " ";
 
     private MainFrame mainFrame;
     private ViewListener viewListener;
     private JLabel travelsLabel;
     private JComboBox travelsComboBox;
-    private JButton viewSeatsButton;
-
-    private String selectedDate;
 
 
     /**
@@ -40,7 +36,7 @@ public class NorthPanel extends JPanel {
     public NorthPanel(MainFrame mainFrame, ViewListener viewListener) {
         this.mainFrame = mainFrame;
         this.viewListener = viewListener;
-        this.setLayout(new GridLayout(1, 3));
+        this.setLayout(new GridLayout(1, 3, 5, 5));
         buildPanel();
     }
 
@@ -51,18 +47,20 @@ public class NorthPanel extends JPanel {
     private void buildPanel() {
         travelsLabel = new JLabel(ROUTES, SwingConstants.RIGHT);
         travelsComboBox = new JComboBox();
-        viewSeatsButton = new JButton(VIEW_SEATS_BUTTON);
 
         this.add(travelsLabel);
         this.add(travelsComboBox);
-        this.add(viewSeatsButton);
-        viewSeatsButton.setEnabled(false);
 
-        viewSeatsButton.addActionListener(new ActionListener() {
+        travelsComboBox.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                viewListener.producedEvent(ViewListener.Event.VIEW_SEATS, getSelectedTravel());
-                mainFrame.setSelectedTravel(getSelectedTravel());
+                try{
+                    viewListener.producedEvent(ViewListener.Event.VIEW_SEATS, getSelectedTravel());
+                    mainFrame.setSelectedTravel(getSelectedTravel());
+                } catch (NullPointerException nullPointerException){
+                    mainFrame.cleanMatrix();
+                }
+
             }
         });
     }
@@ -79,12 +77,10 @@ public class NorthPanel extends JPanel {
         travelsComboBox.removeAllItems();
 
         if(travels.isEmpty()){
-            viewSeatsButton.setEnabled(false);
             mainFrame.receivedListEmpty();
 
         } else {
             travels = sortTravels(travels);
-
             Iterator it = travels.iterator();
             while (it.hasNext()) {
                 Travel element = (Travel) it.next();
@@ -102,7 +98,6 @@ public class NorthPanel extends JPanel {
                         " ]";
                 travelsComboBox.addItem(elementName);
             }
-            viewSeatsButton.setEnabled(true);
         }
     }
 

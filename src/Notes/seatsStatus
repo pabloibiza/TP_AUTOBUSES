@@ -1,0 +1,28 @@
+/**
+     * Retuns the seats status of a travel.
+     * @param travel Model.Travel
+     * @return StringBuilder
+     */
+    public StringBuilder seatsStatus(Travel travel) {
+        int indexSeats = 1;
+        String[] distribution = travel.getSeatsDistribution().split("x");
+        int seatsPerRow = Integer.parseInt(distribution[0]);
+        int rows = Integer.parseInt(distribution[1]);
+        StringBuilder plan = new StringBuilder();
+
+        plan.append("_____" + "__A__B____C__D__\n");
+        for(int i = 0; i < rows; i++) {
+            plan.append(String.format("%02d", i + 1)).append(" ").append("| ");
+            for (int j = 1; j <= seatsPerRow; j++) {
+                if (travel.isSeatFree(indexSeats)) {
+                    plan.append(" ").append(String.format("%02d", indexSeats));
+                } else {
+
+                }
+                if (j == 2) plan.append("  ");
+                indexSeats++;
+            }
+            plan.append("\n");
+        }
+        return plan;
+    }

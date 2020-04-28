@@ -32,6 +32,7 @@ public class MainFrame extends JFrame{
 
     private GregorianCalendar selectedDate;
     private String selectedTravel = "";
+    private Box selectedSeat;
 
     public MainFrame(ViewListener viewListener){
         super();
@@ -48,12 +49,10 @@ public class MainFrame extends JFrame{
         this.add(southPanel, BorderLayout.SOUTH);
         southPanel.enableDisableButtons(false);
 
-        centralPanel = new CentralPanel(viewListener);
+        centralPanel = new CentralPanel(this, viewListener);
         this.add(centralPanel, BorderLayout.CENTER);
 
-        //this.add(new JButton("Solo estoy ocupando espacio"), BorderLayout.CENTER);
         setVisible(true);
-
     }
 
     /**
@@ -61,11 +60,10 @@ public class MainFrame extends JFrame{
      */
     private void configureWindow() {
         this.setTitle(WINDOW_TITLE);
-        this.setSize(900, 400);
+        this.setSize(900, 500);
         this.setLocationRelativeTo(null);
-        this.setLayout(new BorderLayout());
+        this.setLayout(new BorderLayout(5,5));
         this.setResizable(false);
-        //this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         addWindowListener(new WindowAdapter() {
             @Override
@@ -73,7 +71,6 @@ public class MainFrame extends JFrame{
                 viewListener.producedEvent(ViewListener.Event.EXIT, null);
             }
         });
-
     }
 
 
@@ -93,6 +90,7 @@ public class MainFrame extends JFrame{
     public void setSelectedDate(GregorianCalendar date){
         selectedDate = date;
     }
+
 
     /**
      * Returns the selected date.
@@ -156,7 +154,47 @@ public class MainFrame extends JFrame{
      * Builds the seats matrix for a given travel
      * @param travel Travel
      */
-    public void updateBusMatrix (Travel travel) {
+    public void updateBusMatrix(Travel travel) {
         centralPanel.updateMatrix(travel);
+    }
+
+
+    /**
+     * Cleans the central panel matrix.
+     */
+    public void cleanMatrix(){
+        centralPanel.cleanMatrix();
+    }
+
+
+    /**
+     * Sets the selected seat.
+     * @param newSeat Integer
+     */
+    public void setSelectedSeat(Box newSeat){
+        selectedSeat = newSeat;
+        if(newSeat.isOccupied()){
+            southPanel.changeToUnassign();
+        } else {
+            southPanel.changeToAssign();
+        }
+    }
+
+
+    /**
+     * Returns the selected seat.
+     * @return Integer
+     */
+    public Box getSelectedSeat() {
+        return selectedSeat;
+    }
+
+
+    public void assignSeat(){
+        viewListener.producedEvent(ViewListener.Event.ASSIGN, null);
+    }
+
+    public void unAssignSeat(int seatNumber){
+        viewListener.producedEvent(ViewListener.Event.UNASSIGN, null);
     }
 }

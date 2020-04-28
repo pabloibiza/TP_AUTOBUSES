@@ -128,16 +128,13 @@ public class WestPanel extends JPanel {
         searchButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                //String selectedDate = yearComboBox.getSelectedItem().toString() + "," +
-                        //(monthComboBox.getSelectedIndex() + 1) + "," +
-                        //dayComboBox.getSelectedItem().toString();
-
                 GregorianCalendar selectedDate =
                         new GregorianCalendar(Integer.parseInt((String) yearComboBox.getSelectedItem()),
                         (monthComboBox.getSelectedIndex()),
                         Integer.parseInt((String) dayComboBox.getSelectedItem()));
                 mainFrame.setSelectedDate(selectedDate);
                 viewListener.producedEvent(ViewListener.Event.SEARCH, selectedDate);
+
             }
         });
     }
