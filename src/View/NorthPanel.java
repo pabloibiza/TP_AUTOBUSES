@@ -3,7 +3,7 @@
  *
  * View.NorthPanel.java
  *
- * @version 2.1
+ * @version 4.4
  * @author Pablo Sanz Alguacil
  */
 
@@ -56,11 +56,10 @@ public class NorthPanel extends JPanel {
             public void actionPerformed(ActionEvent e) {
                 try{
                     viewListener.producedEvent(ViewListener.Event.VIEW_SEATS, getSelectedTravel());
-                    mainFrame.setSelectedTravel(getSelectedTravel());
+                    mainFrame.travelSelected(getSelectedTravel());
                 } catch (NullPointerException nullPointerException){
                     mainFrame.cleanMatrix();
                 }
-
             }
         });
     }
@@ -107,21 +106,21 @@ public class NorthPanel extends JPanel {
      * @param travels ArrayList
      * @return ArrayList
      */
-    public ArrayList sortTravels(ArrayList travels){
+    private ArrayList sortTravels(ArrayList travels){
         Collections.sort(travels, new Comparator<Travel>(){
 
             @Override
             public int compare(Travel t1, Travel t2) {
+
                 if(t1.getOrigin().compareToIgnoreCase(t2.getOrigin()) == 0) {
                     if(t1.getDestiny().compareToIgnoreCase(t2.getDestiny()) == 0) {
-                        if(String.valueOf(t1.getHour()).compareToIgnoreCase(String.valueOf(t2.getHour())) == 1){
-                            return String.valueOf(t1.getMinute()).compareTo(String.valueOf(t2.getMinute()));
+                        if(t1.getHour().compareTo(t2.getHour()) == 0){
+                            return t1.getMinute().compareTo(t2.getMinute());
                         } else {
-                            return String.valueOf(t1.getHour()).compareToIgnoreCase(String.valueOf(t2.getHour()));
+                            return t1.getHour().compareTo(t2.getHour());
                         }
                     } else {
-                        return
-                                t1.getDestiny().compareToIgnoreCase(t2.getDestiny());
+                        return t1.getDestiny().compareToIgnoreCase(t2.getDestiny());
                     }
                 } else {
                     return t1.getOrigin().compareToIgnoreCase(t2.getOrigin());
@@ -139,6 +138,19 @@ public class NorthPanel extends JPanel {
     public String getSelectedTravel(){
         String selectedTravel = (String) travelsComboBox.getSelectedItem();
         return selectedTravel.split(TEXT_SPACER)[4];
+    }
+
+
+    /**
+     * Returns the hour of the selected travel.
+     * @return Integer[hour, minute]
+     */
+    public int[] getTravelHour(){
+        String selectedItem = (String) travelsComboBox.getSelectedItem();
+        int hour = Integer.parseInt(selectedItem.split(" ")[1].split(":")[0]);
+        int minute = Integer.parseInt(selectedItem.split(" ")[1].split(":")[1]);
+        int[] hourMinute = {hour,minute};
+        return hourMinute;
     }
 
 

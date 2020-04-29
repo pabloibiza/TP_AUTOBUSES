@@ -3,13 +3,11 @@
  *
  * Model.SalesDesk.java
  *
- * @version 2.1
+ * @version 4.4
  * @author Pablo Sanz Alguacil
  */
 
 package Model;
-
-import View.Box;
 
 import java.io.*;
 import java.util.*;
@@ -28,6 +26,7 @@ public class SalesDesk {
     private static final String ROUTE_SHEET_FILE_ESXTENSION = ".txt";
     private static final String  SHEET_NAME_TEXT = "_ROUTE_SHEET";
     private static final String[] COLUMNS_DESIGNATION = {"A", "B", "C", "D", "E", "F"};
+    private static final int MINUM_SIZE_BACK_DOOR = 7;
 
     /**
      * Constructor method. Creates an empty office.
@@ -145,10 +144,8 @@ public class SalesDesk {
      * @return Model.Passenger
      */
     public Passenger searchPassenger (String dni){
-        Iterator it = passengers.iterator();
-        while(it.hasNext()) {
-            Passenger element = (Passenger) it.next();
-            if (element.getDni().equals(dni)){
+        for (Passenger element : passengers) {
+            if (element.getDni().equals(dni)) {
                 return element;
             }
         }
@@ -158,14 +155,12 @@ public class SalesDesk {
 
     /**
      * Returns the travel with the received ID. In case of not success returns null.
-     * @param id
-     * @return
+     * @param id String
+     * @return Travel
      */
     public Travel searchTravel(String id){
-        Iterator it = travels.iterator();
-        while(it.hasNext()) {
-            Travel element = (Travel) it.next();
-            if (element.getId().equals(id)){
+        for (Travel element : travels) {
+            if (element.getId().equals(id)) {
                 return element;
             }
         }
@@ -221,12 +216,12 @@ public class SalesDesk {
 
 
     /**
-     * Unassigns the received seat to its passenger on the received travel.
+     * Deallocates the received seat to its passenger on the received travel.
      * @param travel Model.Travel
      * @param seat Ineger
      */
-    public void unassignSeat (Travel travel, int seat){
-        travel.unassignSeat(seat);
+    public void deallocateSeat(Travel travel, int seat){
+        travel.deallocateSeat(seat);
     }
 
 
@@ -306,7 +301,7 @@ public class SalesDesk {
             for (int col = 0; col < cols; col++) {
                 if (col == corridorColumn && row != (rows - 1)) { //Corridor
                     plan.append(corridorGaps);
-                } else if((row == (rows/2)) && (col > corridorColumn)) { //Back door
+                } else if((row == (rows/2)) && (col > corridorColumn) && rows > MINUM_SIZE_BACK_DOOR) { //Back door
                     plan.append("  ");
                 } else {
                     if (travel.isSeatFree(seatsIndex)) {
@@ -329,32 +324,9 @@ public class SalesDesk {
      * @throws IOException
      */
     public void savePassengers (String fileName) throws IOException {
-        save(fileName, passengers);
-    }
-
-
-    /**
-     * Saves the travels on a file.
-     * @param fileName String
-     * @throws IOException
-     */
-    public void saveTravels (String fileName) throws IOException {
-        save(fileName, travels);
-    }
-
-
-    /**
-     * Saves a Storable type array in a file.
-     * @param fileName String
-     * @param collection Collection
-     * @throws IOException
-     */
-    private void save (String fileName, Collection collection) throws IOException {
         PrintWriter file = new PrintWriter( new BufferedWriter( new FileWriter(fileName)));
 
-        Iterator it = collection.iterator();
-        while(it.hasNext()) {
-            Storable element = (Storable) it.next();
+        for (Passenger element : passengers) {
             element.save(file);
         }
         file.close();

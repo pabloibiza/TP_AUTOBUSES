@@ -3,31 +3,28 @@
  *
  * View.SouthPanel.java
  *
- * @version 2.1
+ * @version 4.4
  * @author Pablo Sanz Alguacil
  */
 
 package View;
 
 import Control.ViewListener;
-import Model.Passenger;
-
 import javax.swing.*;
-import javax.swing.text.View;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 
 public class SouthPanel extends JPanel {
     private static final String ASSIGN = "Assign";
-    private static final String UNASSIGN = "Unassign";
+    private static final String DEALLOCATE = "Deallocate";
     private static final String GENERATE_ROUTE_SHEET = "Generate Route Sheet";
 
     private MainFrame mainFrame;
     private ViewListener viewListener;
 
     private JButton assignButton;
-    private JButton unAssignButton;
+    private JButton deallocateButton;
     private JButton routeSheetButton;
 
 
@@ -46,7 +43,7 @@ public class SouthPanel extends JPanel {
      */
     private void buildPanel(){
         assignButton = new JButton(ASSIGN);
-        unAssignButton = new JButton(UNASSIGN);
+        deallocateButton = new JButton(DEALLOCATE);
         routeSheetButton = new JButton(GENERATE_ROUTE_SHEET);
         this.add(assignButton);
         this.add(routeSheetButton);
@@ -58,10 +55,10 @@ public class SouthPanel extends JPanel {
             }
         });
 
-        unAssignButton.addActionListener(new ActionListener() {
+        deallocateButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                mainFrame.unassignSeat();
+                mainFrame.deallocateSeat();
             }
         });
 
@@ -75,11 +72,20 @@ public class SouthPanel extends JPanel {
 
 
     /**
-     * Changes the state of the buttons depending on the received parameter.
+     * Changes the state of the assign button.
      * @param option Boolean
      */
-    public void enableDisableButtons(Boolean option){
+    public void stateAssignDeallocateButtons(Boolean option){
         assignButton.setEnabled(option);
+        deallocateButton.setEnabled(option);
+    }
+
+
+    /**
+     * Changes the sate of the generate route sheet button.
+     * @param option boolean
+     */
+    public void stateRouteSheetButton(Boolean option){
         routeSheetButton.setEnabled(option);
     }
 
@@ -87,9 +93,9 @@ public class SouthPanel extends JPanel {
     /**
      * Replaces the aasign button by the unasign one.
      */
-    public void changeToUnassign(){
+    public void changeToDeallocate(){
         this.removeAll();
-        this.add(unAssignButton);
+        this.add(deallocateButton);
         this.add(routeSheetButton);
         this.revalidate();
         this.repaint();
@@ -97,7 +103,7 @@ public class SouthPanel extends JPanel {
 
 
     /**
-     * replaces the unassign button by the assign one;
+     * replaces the deallocate button by the assign one;
      */
     public void changeToAssign(){
         this.removeAll();

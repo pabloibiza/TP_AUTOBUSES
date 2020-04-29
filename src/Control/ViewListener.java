@@ -1,15 +1,16 @@
 /*
  * Model.SalesDesk.java
  *
- * @version 2.1
+ * @version 4.4
  * @author Pablo Sanz Alguacil
  */
 
 package Control;
 
 public interface ViewListener {
-    public enum Event { NEW_TRAVEL, DELETE_TRAVEL, NEW_PASSENGER, DELETE_PASSENGER, EXIT, SEARCH, VIEW_SEATS, ASSIGN,
-        GENERATE_ROUTE_SHEET, UNASSIGN}
+    public enum Event { NEW_TRAVEL, NEW_PASSENGER, DELETE_PASSENGER, EXIT, SEARCH, VIEW_SEATS, ASSIGN,
+        GENERATE_ROUTE_SHEET, DEALLOCATE
+    }
 
     public void producedEvent(Event event, Object obj);
 

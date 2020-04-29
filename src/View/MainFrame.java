@@ -3,7 +3,7 @@
  *
  * View.MainFrame.java
  *
- * @version 2.1
+ * @version 4.4
  * @author Pablo Sanz Alguacil
  */
 
@@ -24,6 +24,12 @@ public class MainFrame extends JFrame{
     private static final String WINDOW_TITLE = "BUS OFFICE";
     private static final String INFO_WINDOW_TITLE = "INFO";
     private static final String ERROR_WINDOW_TITLE = "ERROR";
+    private static final String NO_TRAVELS = "No travels found for this date.";
+    private static final String TRAVEL_OUT_OF_DATE = "This travel is out of date.";
+    private static final String FILL_ALL_GAPS = "All fields must be filled";
+    private static final String[] NEW_PASSENGER_QUESTIONS = {"DNI", "Name", "Surname"};
+    private static final String COLON = ": ";
+    private static final String ELEMENTS_SEPARATOR = ",";
 
     private ViewListener viewListener;
     private WestPanel westPanel;
@@ -48,7 +54,8 @@ public class MainFrame extends JFrame{
 
         southPanel = new SouthPanel(this, viewListener);
         this.add(southPanel, BorderLayout.SOUTH);
-        southPanel.enableDisableButtons(false);
+        southPanel.stateRouteSheetButton(false);
+        southPanel.stateAssignDeallocateButtons(false);
 
         centralPanel = new CentralPanel(this);
         this.add(centralPanel, BorderLayout.CENTER);
@@ -81,12 +88,13 @@ public class MainFrame extends JFrame{
      */
     public void updateTravels(ArrayList travels){
         northPanel.updateTravels(travels);
+
     }
 
 
     /**
      * Sets the selected date.
-     * @param date
+     * @param date GregorianCalendar
      */
     public void setSelectedDate(GregorianCalendar date){
         selectedDate = date;
@@ -95,7 +103,7 @@ public class MainFrame extends JFrame{
 
     /**
      * Returns the selected date.
-     * @return String
+     * @return GregorianCalendar
      */
     public GregorianCalendar getSelectedDate(){
         return selectedDate;
@@ -106,19 +114,24 @@ public class MainFrame extends JFrame{
      * Sets the id of the selected travel and enables or disables the south panel depending on the received data.
      * @param id String
      */
-    public void setSelectedTravel(String id){
+    public void travelSelected(String id){
         selectedTravel = id;
-        if(id == null){
-            southPanel.enableDisableButtons(false);
+        if(id == null) {
+            southPanel.stateRouteSheetButton(false);
+            southPanel.stateAssignDeallocateButtons(false);
+        } else if(isOutOfDate()){
+            southPanel.stateAssignDeallocateButtons(false);
+            southPanel.stateRouteSheetButton(true);
+            infoMessage(TRAVEL_OUT_OF_DATE);
         } else {
-            southPanel.enableDisableButtons(true);
+            southPanel.stateRouteSheetButton(true);
         }
     }
 
 
     /**
      * Returns the id of the selected travel.
-     * @return
+     * @return String
      */
     public String getSelectedTravel(){
         return selectedTravel;
@@ -129,7 +142,9 @@ public class MainFrame extends JFrame{
      * Actions to perform if the received travels list is empty.
      */
     public void receivedListEmpty(){
-        southPanel.enableDisableButtons(false);
+        southPanel.stateRouteSheetButton(false);
+        southPanel.stateAssignDeallocateButtons(false);
+        infoMessage(NO_TRAVELS);
     }
 
 
@@ -146,7 +161,7 @@ public class MainFrame extends JFrame{
      * Generates an error dialog window with the received message.
      * @param message String
      */
-    public void errorMessage(String message){
+    public void errorMessage(String message, Exception e){
         JOptionPane.showMessageDialog(this, message, ERROR_WINDOW_TITLE, JOptionPane.ERROR_MESSAGE);
     }
 
@@ -178,10 +193,14 @@ public class MainFrame extends JFrame{
         }
         selectedSeat = newSeat;
         if(newSeat.isOccupied()){
-            southPanel.changeToUnassign();
+            southPanel.changeToDeallocate();
         } else {
             southPanel.changeToAssign();
         }
+        if(!isOutOfDate()){
+            southPanel.stateAssignDeallocateButtons(true);
+        }
+
     }
 
 
@@ -198,22 +217,66 @@ public class MainFrame extends JFrame{
      * Assigns a seat on a travel for a passenger.
      */
     public void assignSeat(){
-        //Implementar ventana para introducir datos del pasajero
-        Passenger newPassenger = new Passenger("99999999Z", "Nombre", "Apellido"); //Aqui se reciven los datos de la ventana emergente
-        viewListener.producedEvent(ViewListener.Event.NEW_PASSENGER, newPassenger);
-        String assignationData[] = {getSelectedTravel(), newPassenger.getDni(), String.valueOf(getSelectedSeat().getSeatNumber())};
-        viewListener.producedEvent(ViewListener.Event.ASSIGN, assignationData);
-        getSelectedSeat().setAssigned(newPassenger.getDni());
-        southPanel.changeToUnassign();
+        Passenger newPassenger = askPassengerInfo();
+        if(newPassenger != null) {
+            viewListener.producedEvent(ViewListener.Event.NEW_PASSENGER, newPassenger);
+            viewListener.producedEvent(ViewListener.Event.ASSIGN,
+                    new String[]{getSelectedTravel(),
+                            newPassenger.getDni(),
+                            String.valueOf(getSelectedSeat().getSeatNumber())});
+            getSelectedSeat().setAssigned(newPassenger.getDni());
+            southPanel.changeToDeallocate();
+        }
     }
 
 
-    public void unassignSeat() {
-        String unassignationData[] = {getSelectedTravel(), String.valueOf(getSelectedSeat().getSeatNumber())};
+    /**
+     * Deallocates a seat on a travel for a passenger.
+     */
+    public void deallocateSeat() {
         viewListener.producedEvent(ViewListener.Event.DELETE_PASSENGER, getSelectedSeat().getDni());
-        viewListener.producedEvent(ViewListener.Event.UNASSIGN, unassignationData);
-        getSelectedSeat().setUnassigned();
+        viewListener.producedEvent(ViewListener.Event.DEALLOCATE,
+                new String[] {getSelectedTravel(), String.valueOf(getSelectedSeat().getSeatNumber())});
+        getSelectedSeat().setDeallocated();
         southPanel.changeToAssign();
+    }
+
+
+    /**
+     * Checks if the currently selected travel is out of date;
+     * @return boolean
+     */
+    public boolean isOutOfDate(){
+        int[] hourMinute = northPanel.getTravelHour();
+        GregorianCalendar date = new GregorianCalendar(
+                getSelectedDate().get(GregorianCalendar.YEAR),
+                getSelectedDate().get(GregorianCalendar.MONTH),
+                getSelectedDate().get(GregorianCalendar.DAY_OF_MONTH),
+                hourMinute[0],
+                hourMinute[1]);
+        return date.before(new GregorianCalendar());
+
+    }
+
+
+    /**
+     * Generates a dialog window to ask for data to create a new passenger, and returns that passenger.
+     * @return Passenger
+     */
+    public Passenger askPassengerInfo(){
+        StringBuilder data = new StringBuilder();
+        Passenger passenger;
+        for (int i = 0; i < 3; i++) {
+            data.append(JOptionPane.showInputDialog(NEW_PASSENGER_QUESTIONS[i] + COLON)).append(ELEMENTS_SEPARATOR);
+        }
+        try{
+            passenger = new Passenger(data.toString());
+            return passenger;
+        } catch (ArrayIndexOutOfBoundsException e) {
+            infoMessage(FILL_ALL_GAPS);
+        }
+        return null;
+
     }
 
 }

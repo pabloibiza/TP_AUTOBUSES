@@ -3,7 +3,7 @@
  *
  * Control.Office.java
  *
- * @version 2.1
+ * @version 4.4
  * @author Pablo Sanz Alguacil
  */
 
@@ -22,13 +22,12 @@ public class Office implements ViewListener {
     private static final String PASSENGERS_FILE_PATH = "src/storage/passengers.csv";
     private static final String TRAVELS_FILE_PATH = "src/storage/travels.csv";
     private static final String TRAVELS_STATUS_FILE_PATH = "src/storage/travels/status.csv";
-    private static final String SUCCESSFUL_ROUTE_GENERATED = "Route sheet generated successfuly";
+    private static final String SUCCESSFUL_ROUTE_GENERATED = "Route sheet generated successfully";
     private static final String ERROR_SAVING_PASSENGERS = "Error while saving changes to passengers file";
-    private static final String ERROR_SAVING_TRAVELS = "Error while saving changes to travels file";
     private static final String ERROR_SAVING_TRAVELS_STATUS = "Error while saving changes to travels status file";
-    private static final String TRAVEL_NOT_EXISTANT = "Travel doesn't exists";
     private static final String PASSENGER_NOT_EXISTANT = "Passenger doesn't exists";
-    private static final String PASSENGER_ALREADY_EXISTS = "Passenger already exists";
+    private static final String PASSENGER_ALREADY_EXISTS = "Passenger already exists for another travel, " +
+            "it will be also added in this one";
     private static final String TRAVEL_ALREADY_ADDED = "Travel already added";
 
     private SalesDesk salesDesk;
@@ -37,10 +36,9 @@ public class Office implements ViewListener {
 
     /**
      * Constructor method.
-     * @param salesDesk
      */
-    public Office(SalesDesk salesDesk){
-        this.salesDesk = salesDesk;
+    public Office(){
+        salesDesk = new SalesDesk(PASSENGERS_FILE_PATH, TRAVELS_FILE_PATH, TRAVELS_STATUS_FILE_PATH);
         mainFrame = new MainFrame(this);
     }
 
@@ -52,32 +50,16 @@ public class Office implements ViewListener {
         try {
             salesDesk.savePassengers(PASSENGERS_FILE_PATH);
         } catch (IOException e) {
-            errorMessage("Error while saving changes to passengers file", e);
-        }
-
-        try {
-            salesDesk.saveTravels(TRAVELS_FILE_PATH);
-        } catch (IOException e) {
-            errorMessage("Error while saving changes to travels file", e);
+            mainFrame.errorMessage("Error while saving changes to passengers file", e);
         }
 
         try {
             salesDesk.saveTravelsStatus(TRAVELS_STATUS_FILE_PATH);
         } catch (IOException e) {
-            errorMessage("Error while saving changes to travels status file", e);
+            mainFrame.errorMessage("Error while saving changes to travels status file", e);
         }
 
         System.exit(0);
-    }
-
-
-    /**
-     * Puts an error message.
-     * @param message String
-     * @param e Exception
-     */
-    private void errorMessage(String message, Exception e) {
-        mainFrame.errorMessage(message);
     }
 
 
@@ -87,29 +69,7 @@ public class Office implements ViewListener {
      */
     private void newTravel(Travel travel){
         if(!salesDesk.addTravel(travel)){
-            errorMessage(TRAVEL_ALREADY_ADDED, null);
-        }
-        try {
-            salesDesk.saveTravels(TRAVELS_FILE_PATH);
-        } catch (IOException e) {
-            errorMessage(ERROR_SAVING_TRAVELS, e);
-        }
-    }
-
-
-    /**
-     * Deletes a travel and saves all travels.
-     * @param travel Travel
-     */
-    private void deleteTravel(Travel travel){
-        if(!salesDesk.deleteTravel(travel)){
-            errorMessage(TRAVEL_NOT_EXISTANT, null);
-        }
-        ;
-        try {
-            salesDesk.saveTravels(TRAVELS_FILE_PATH);
-        } catch (IOException e) {
-            errorMessage(ERROR_SAVING_TRAVELS, e);
+            mainFrame.errorMessage(TRAVEL_ALREADY_ADDED, null);
         }
     }
 
@@ -119,13 +79,13 @@ public class Office implements ViewListener {
      * @param passenger Passenger
      */
     private void newPassenger(Passenger passenger){
-        if(!salesDesk.addPassenger(passenger)) {
-            errorMessage(PASSENGER_ALREADY_EXISTS ,null);
-        };
+        if (!salesDesk.addPassenger(passenger)) {
+            mainFrame.infoMessage(PASSENGER_ALREADY_EXISTS);
+        }
         try {
             salesDesk.savePassengers(PASSENGERS_FILE_PATH);
         } catch (IOException e) {
-            errorMessage(ERROR_SAVING_PASSENGERS, e);
+            mainFrame.errorMessage(ERROR_SAVING_PASSENGERS, e);
         }
     }
 
@@ -136,12 +96,12 @@ public class Office implements ViewListener {
      */
     private void deletePassenger(String id){
         if(!salesDesk.deletePassenger(salesDesk.searchPassenger(id))){
-            errorMessage(PASSENGER_NOT_EXISTANT, null);
+            mainFrame.errorMessage(PASSENGER_NOT_EXISTANT, null);
         };
         try {
             salesDesk.savePassengers(PASSENGERS_FILE_PATH);
         } catch (IOException e) {
-            errorMessage(ERROR_SAVING_PASSENGERS, e);
+            mainFrame.errorMessage(ERROR_SAVING_PASSENGERS, e);
         }
     }
 
@@ -161,7 +121,6 @@ public class Office implements ViewListener {
      * @param id String
      */
     private void viewSeats(String id){
-        mainFrame.setSelectedTravel(id);
         mainFrame.updateBusMatrix(salesDesk.searchTravel(id));
     }
 
@@ -189,7 +148,7 @@ public class Office implements ViewListener {
         try {
             salesDesk.saveTravelsStatus(TRAVELS_STATUS_FILE_PATH);
         } catch (IOException e) {
-            errorMessage(ERROR_SAVING_TRAVELS_STATUS, e);
+            mainFrame.errorMessage(ERROR_SAVING_TRAVELS_STATUS, e);
         }
     }
 
@@ -201,11 +160,11 @@ public class Office implements ViewListener {
     private void unassignSeat(String[] unassignationData) {
         Travel travel = salesDesk.searchTravel(unassignationData[0]);
         int seat = Integer.parseInt(unassignationData[1]);
-        salesDesk.unassignSeat(travel, seat);
+        salesDesk.deallocateSeat(travel, seat);
         try {
             salesDesk.saveTravelsStatus(TRAVELS_STATUS_FILE_PATH);
         } catch (IOException e) {
-            errorMessage(ERROR_SAVING_TRAVELS_STATUS, e);
+            mainFrame.errorMessage(ERROR_SAVING_TRAVELS_STATUS, e);
         }
     }
 
@@ -220,10 +179,6 @@ public class Office implements ViewListener {
         switch(event) {
             case NEW_TRAVEL:
                 newTravel((Travel) object);
-                break;
-
-            case DELETE_TRAVEL:
-                deleteTravel((Travel) object);
                 break;
 
             case NEW_PASSENGER:
@@ -250,7 +205,7 @@ public class Office implements ViewListener {
                 assignSeat((String[]) object);
                 break;
 
-            case UNASSIGN:
+            case DEALLOCATE:
                 unassignSeat((String[]) object);
                 break;
 

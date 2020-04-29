@@ -3,7 +3,7 @@
  *
  * Model.Travel.java
  *
- * @version 2.1
+ * @version 4.4
  * @author Pablo Sanz Alguacil
  */
 
@@ -14,7 +14,7 @@ import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.Objects;
 
-public class Travel implements Storable {
+public class Travel {
     private String id;
     private String origin;
     private String destiny;
@@ -137,7 +137,7 @@ public class Travel implements Storable {
      * Returns the hour.
      * @return Integer
      */
-    public int getHour(){
+    public Integer getHour(){
         return date.get(Calendar.HOUR_OF_DAY);
     }
 
@@ -145,7 +145,7 @@ public class Travel implements Storable {
      * Returns the minutes.
      * @return Integer
      */
-    public int getMinute(){
+    public Integer getMinute(){
         return date.get(Calendar.MINUTE);
     }
 
@@ -211,26 +211,6 @@ public class Travel implements Storable {
     }
 
 
-    /**w
-     * Saves the travel throw the received PrintWriter.
-     * @param printWriter PrintWriter
-     */
-    @Override
-    public void save(PrintWriter printWriter){
-        StringBuilder line = new StringBuilder();
-        line.append(id).append(ELEMENTS_SEPARATOR)
-                .append(origin).append(ELEMENTS_SEPARATOR)
-                .append(destiny).append(ELEMENTS_SEPARATOR)
-                .append(date.get(GregorianCalendar.YEAR)).append(ELEMENTS_SEPARATOR)
-                .append(date.get(GregorianCalendar.MONTH)).append(ELEMENTS_SEPARATOR)
-                .append(date.get(GregorianCalendar.DAY_OF_MONTH)).append(ELEMENTS_SEPARATOR)
-                .append(date.get(GregorianCalendar.HOUR_OF_DAY)).append(ELEMENTS_SEPARATOR)
-                .append(date.get(GregorianCalendar.MINUTE)).append(ELEMENTS_SEPARATOR)
-                .append(seatsDistribution);
-        printWriter.println(line);
-    }
-
-
     /**
      * Saves the travel status throw the received PrintWriter.
      * @param printWriter PrintWriter
@@ -266,7 +246,7 @@ public class Travel implements Storable {
      * Removes the asignated pasenger of the received seat.
      * @param seat Integer
      */
-    public void unassignSeat(int seat){
+    public void deallocateSeat(int seat){
         seats[seat] = null;
     }
 

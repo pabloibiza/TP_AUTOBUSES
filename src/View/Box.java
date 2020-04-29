@@ -4,7 +4,7 @@
  *
  * View.Box.java
  *
- * @version 2.1
+ * @version 4.4
  * @author Pablo Sanz Alguacil
  */
 
@@ -18,46 +18,43 @@ import java.awt.event.ActionListener;
 public class Box extends JButton {
     private MainFrame mainFrame;
     private int seatNumber;
-    private int row;
-    private int column;
     private String dni;
     private boolean inUse;
     private Box box = this;
+    private Color defaultColor = getBackground();
+    private Color darkerGreen = new Color(31, 155, 8);
+    private Color darkerRed = new Color(192, 25, 8);
 
 
     /**
      * Constructor method.
      * @param mainFrame MainFrame
      * @param seatNumber Integer
-     * @param row Integer
-     * @param column Integer
      * @param dni String
      */
-    public Box(MainFrame mainFrame, int seatNumber, int row, int column, String dni) {
+    public Box(MainFrame mainFrame, int seatNumber, String dni) {
         this.mainFrame = mainFrame;
         this.seatNumber = seatNumber;
-        this.row = row;
-        this.column =column;
         this.dni = dni;
         this.setText(String.valueOf(seatNumber));
         if(dni != null) {
             setAssigned(dni);
         } else {
-            setUnassigned();
+            setDeallocated();
         }
 
         this.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                select();
                 mainFrame.setSelectedSeat(box);
+                select();
             }
         });
     }
 
 
     /**
-     * Constructor method for an empty Box.
+     * Constructor method for an empty and invisible Box.
      */
     public Box () {
         this.setEnabled(false);
@@ -66,22 +63,22 @@ public class Box extends JButton {
 
     /**
      * Sets the id for the Box, sets the Box status variable to true and changes the color to blue.
-     * @param newDni
+     * @param newDni String
      */
     public void setAssigned(String newDni) {
         dni = newDni;
         inUse = true;
-        this.setForeground(Color.RED);
+        this.setForeground(darkerRed);
     }
 
 
     /**
      * Removes de associated id, sets the Box status variable to false, and changes the color to green.
      */
-    public void setUnassigned(){
+    public void setDeallocated(){
         dni = "";
         inUse = false;
-        this.setForeground(Color.BLUE);
+        this.setForeground(darkerGreen);
     }
 
 
@@ -126,7 +123,7 @@ public class Box extends JButton {
      * Deselects the button.
      */
     public void deselect() {
-        setBackground(new JButton().getBackground());
+        setBackground(defaultColor);
         setOpaque(false);
     }
 }

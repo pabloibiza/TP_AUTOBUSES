@@ -3,14 +3,13 @@
  *
  * View.WestPanel.java
  *
- * @version 2.1
+ * @version 4.4
  * @author Pablo Sanz Alguacil
  */
 
 package View;
 
 import Control.ViewListener;
-
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;

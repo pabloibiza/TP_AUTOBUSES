@@ -3,7 +3,7 @@
  *
  * Model.Passenger.java
  *
- * @version 2.1
+ * @version 4.4
  * @author Pablo Sanz Alguacil
  */
 
@@ -12,7 +12,7 @@ package Model;
 import java.io.PrintWriter;
 import java.util.Objects;
 
-public class Passenger implements Storable {
+public class Passenger {
     private String dni;
     private String name;
     private String surname;
@@ -81,7 +81,6 @@ public class Passenger implements Storable {
      * Saves a contact throw the receives PrintWriter.
      * @param printWriter
      */
-    @Override
     public void save(PrintWriter printWriter){
         printWriter.println(this.toString());
     }

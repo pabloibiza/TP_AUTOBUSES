@@ -3,21 +3,19 @@
  *
  * View.CentralPanel.java
  *
- * @version 2.1
+ * @version 4.4
  * @author Pablo Sanz Alguacil
  */
 
 package View;
 import Control.ViewListener;
 import Model.Travel;
-
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.net.URL;
 
 public class CentralPanel extends JPanel {
     private static final String DISTRIBUTION_SEPARATOR = "x";
@@ -46,7 +44,7 @@ public class CentralPanel extends JPanel {
         try {
             image = ImageIO.read(new File("src/View/resources/bus.png"));
         } catch (IOException ex) {
-            mainFrame.errorMessage(ERROR_BACKGROUND_NOT_FOUND);
+            mainFrame.errorMessage(ERROR_BACKGROUND_NOT_FOUND, ex);
         }
         this.add(new JButton("Solo estoy ocupando espacio"), BorderLayout.EAST);
     }
@@ -82,7 +80,7 @@ public class CentralPanel extends JPanel {
                 } else if((row == (rows/2)) && (col > corridorColumn) && rows > MINUM_SIZE_BACK_DOOR) { //Back door
                     boxes[row][col] = new Box();
                 } else { //Seats
-                    boxes[row][col] = new Box(mainFrame, seatsIndex, row, col, travel.whoIsSited(seatsIndex));
+                    boxes[row][col] = new Box(mainFrame, seatsIndex, travel.whoIsSited(seatsIndex));
                     seatsIndex++;
                 }
                 matrix.add(boxes[row][col]);
@@ -98,12 +96,17 @@ public class CentralPanel extends JPanel {
         this.revalidate();
         this.repaint();
     }
-/**
-    //@Override
+
+
+    /**
+     * Paints a
+     * @param g Graphics
+     */
+    @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
-        g.drawImage(image, 50, 0, 400,400,this); // see javadoc for more info on the parameters
+        g.drawImage(image, 50, 0, 400,400,this);
         matrix.setOpaque(false);
     }
-*/
+
 }
