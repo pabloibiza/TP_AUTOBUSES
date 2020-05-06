@@ -8,25 +8,38 @@
  */
 
 package View;
-import Control.ViewListener;
+import Model.SalesDesk;
 import Model.Travel;
 import javax.imageio.ImageIO;
 import javax.swing.*;
+import javax.swing.border.Border;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.util.Locale;
+import java.util.ResourceBundle;
 
 public class CentralPanel extends JPanel {
     private static final String DISTRIBUTION_SEPARATOR = "x";
-    private static final String ERROR_BACKGROUND_NOT_FOUND = "Background image not found";
+    //private static final String ERROR_BACKGROUND_NOT_FOUND = "Background image not found";
+    private static final String BACKGROUND_IMAGE_PATH = "src/View/resources/bus.png";
     private static final int CORRIDOR_GAPS = 1;
     private static final int MINUM_SIZE_BACK_DOOR = 7;
+    //private static final String INFO_PANEL_TITTLE = "Travel info";
+    private static final int INFO_PANEL_WIDTH = 175;
+    private static final int INFO_PANEL_HEIGHT = 400;
+    private static final String BULLET_POINT = "·";
+    private static final String HTML_SALT = "<p>";
+    private static final String HTML_INDICATOR = "<html>";
+    private static final String INFO_ELEMENTS_SEPARATOR = "-";
 
-    private ViewListener viewListener;
     private MainFrame mainFrame;
+    private SalesDesk salesDesk;
     private Box boxes[][];
     private JPanel matrix;
+    private JPanel infoPanel;
+    private JLabel info;
     private BufferedImage image;
 
 
@@ -34,19 +47,27 @@ public class CentralPanel extends JPanel {
      * Constructor method.
      * @param mainFrame MainFrame
      */
-    public CentralPanel (MainFrame mainFrame) {
-        this.viewListener = viewListener;
+    public CentralPanel (MainFrame mainFrame, SalesDesk salesDesk) {
         this.mainFrame = mainFrame;
+        this.salesDesk = salesDesk;
         this.setLayout(new BorderLayout(5,5));
-        matrix = new JPanel();
-        this.add(matrix, BorderLayout.CENTER);
-        matrix.setBorder(BorderFactory.createMatteBorder(1, 1, 1, 1, Color.BLACK));
         try {
-            image = ImageIO.read(new File("src/View/resources/bus.png"));
+            image = ImageIO.read(new File(BACKGROUND_IMAGE_PATH));
         } catch (IOException ex) {
-            mainFrame.errorMessage(ERROR_BACKGROUND_NOT_FOUND, ex);
+            mainFrame.errorMessage(ResourceBundle.getBundle("Labels", Locale.US).getString("ERROR_BACKGROUND_NOT_FOUND"), ex);
         }
-        this.add(new JButton("Solo estoy ocupando espacio"), BorderLayout.EAST);
+
+        matrix = new JPanel();
+        matrix.setBorder(BorderFactory.createMatteBorder(1, 1, 1, 1, Color.DARK_GRAY));
+
+        infoPanel = new JPanel();
+        info = new JLabel();
+        infoPanel.add(info);
+        infoPanel.setPreferredSize(new Dimension(INFO_PANEL_WIDTH,INFO_PANEL_HEIGHT));
+        infoPanel.setBorder(BorderFactory.createTitledBorder(ResourceBundle.getBundle("Labels", Locale.US).getString("INFO_PANEL_TITTLE")));
+
+        this.add(matrix, BorderLayout.CENTER);
+        this.add(infoPanel, BorderLayout.EAST);
     }
 
 
@@ -60,6 +81,7 @@ public class CentralPanel extends JPanel {
         int rows = Integer.parseInt(travel.getSeatsDistribution().split(DISTRIBUTION_SEPARATOR)[1]);
         matrix.setLayout(new GridLayout(rows, cols, 5, 5));
         buildMatrix(rows, cols, travel);
+        setInfo(travel.getInfo());
         this.revalidate();
         this.repaint();
     }
@@ -80,7 +102,7 @@ public class CentralPanel extends JPanel {
                 } else if((row == (rows/2)) && (col > corridorColumn) && rows > MINUM_SIZE_BACK_DOOR) { //Back door
                     boxes[row][col] = new Box();
                 } else { //Seats
-                    boxes[row][col] = new Box(mainFrame, seatsIndex, travel.whoIsSited(seatsIndex));
+                    boxes[row][col] = new Box(mainFrame, seatsIndex, salesDesk.searchPassenger(travel.whoIsSited(seatsIndex)));
                     seatsIndex++;
                 }
                 matrix.add(boxes[row][col]);
@@ -99,13 +121,22 @@ public class CentralPanel extends JPanel {
 
 
     /**
-     * Paints a
+     * Sets the info JLabel text.
+     * @param text
+     */
+    public void setInfo(String text){
+        text = BULLET_POINT + text.replace(INFO_ELEMENTS_SEPARATOR, HTML_SALT + BULLET_POINT);
+        info.setText(HTML_INDICATOR + text + HTML_INDICATOR);
+    }
+
+    /**
+     * Paints the packground with and image.
      * @param g Graphics
      */
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
-        g.drawImage(image, 50, 0, 400,400,this);
+        g.drawImage(image, 50, 0, 400,400, this);
         matrix.setOpaque(false);
     }
 

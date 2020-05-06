@@ -11,6 +11,7 @@ package View;
 
 import Control.ViewListener;
 import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
@@ -35,6 +36,7 @@ public class SouthPanel extends JPanel {
     public SouthPanel(MainFrame mainFrame, ViewListener viewListener) {
         this.mainFrame = mainFrame;
         this.viewListener = viewListener;
+        this.setLayout(new FlowLayout());
         buildPanel();
     }
 

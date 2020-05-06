@@ -11,16 +11,18 @@ package View;
 
 import Control.ViewListener;
 import Model.Passenger;
-import Model.Travel;
+import Model.SalesDesk;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.util.ArrayList;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.GregorianCalendar;
+import java.util.List;
 
-public class MainFrame extends JFrame{
+public class MainFrame extends JFrame implements PropertyChangeListener{
     private static final String WINDOW_TITLE = "BUS OFFICE";
     private static final String INFO_WINDOW_TITLE = "INFO";
     private static final String ERROR_WINDOW_TITLE = "ERROR";
@@ -30,26 +32,29 @@ public class MainFrame extends JFrame{
     private static final String[] NEW_PASSENGER_QUESTIONS = {"DNI", "Name", "Surname"};
     private static final String COLON = ": ";
     private static final String ELEMENTS_SEPARATOR = ",";
+    private static final String INSTANCE_ALREADY_CREATED = "Is not possible to create more than one instance of ";
 
+    private static MainFrame mainFrame;
     private ViewListener viewListener;
+    private SalesDesk salesDesk;
     private WestPanel westPanel;
     private NorthPanel northPanel;
     private SouthPanel southPanel;
     private CentralPanel centralPanel;
-
     private GregorianCalendar selectedDate;
     private String selectedTravel = "";
     private Box selectedSeat;
 
-    public MainFrame(ViewListener viewListener){
+    private MainFrame(ViewListener viewListener, SalesDesk salesDesk){
         super();
         this.viewListener = viewListener;
+        this.salesDesk = salesDesk;
         configureWindow();
 
         westPanel = new WestPanel(this, viewListener);
         this.add(westPanel, BorderLayout.WEST);
 
-        northPanel = new NorthPanel(this, viewListener);
+        northPanel = new NorthPanel(this);
         this.add(northPanel, BorderLayout.NORTH);
 
         southPanel = new SouthPanel(this, viewListener);
@@ -57,10 +62,38 @@ public class MainFrame extends JFrame{
         southPanel.stateRouteSheetButton(false);
         southPanel.stateAssignDeallocateButtons(false);
 
-        centralPanel = new CentralPanel(this);
+        centralPanel = new CentralPanel(this, salesDesk);
         this.add(centralPanel, BorderLayout.CENTER);
 
         setVisible(true);
+    }
+
+
+    /**
+     * Creates a singleton instance.
+     * @param viewListener ViewListener
+     * @param salesDesk SalesDesk
+     * @return Mainframe
+     */
+    public static synchronized MainFrame getSingletonInstance(ViewListener viewListener, SalesDesk salesDesk) {
+        if (mainFrame == null){
+            mainFrame = new MainFrame(viewListener, salesDesk);
+        }
+        else{
+            mainFrame.errorMessage(INSTANCE_ALREADY_CREATED + mainFrame.getClass().getSimpleName(), null);
+        }
+        return mainFrame;
+    }
+
+
+    /**
+     * Avoids cloning this object.
+     * @return
+     * @throws CloneNotSupportedException
+     */
+    @Override
+    public Object clone() throws CloneNotSupportedException {
+        throw new CloneNotSupportedException();
     }
 
     /**
@@ -84,9 +117,10 @@ public class MainFrame extends JFrame{
 
     /**
      * Updates de travels north's panel combo box.
-     * @param travels
+     * @param date GregorianCalendar
      */
-    public void updateTravels(ArrayList travels){
+    public void updateTravelsPerDate(GregorianCalendar date){
+        List travels = salesDesk.searchTravelsPerDate(date);
         northPanel.updateTravels(travels);
 
     }
@@ -116,11 +150,10 @@ public class MainFrame extends JFrame{
      */
     public void travelSelected(String id){
         selectedTravel = id;
+        southPanel.stateAssignDeallocateButtons(false);
         if(id == null) {
             southPanel.stateRouteSheetButton(false);
-            southPanel.stateAssignDeallocateButtons(false);
         } else if(isOutOfDate()){
-            southPanel.stateAssignDeallocateButtons(false);
             southPanel.stateRouteSheetButton(true);
             infoMessage(TRAVEL_OUT_OF_DATE);
         } else {
@@ -168,10 +201,10 @@ public class MainFrame extends JFrame{
 
     /**
      * Builds the seats matrix for a given travel
-     * @param travel Travel
+     * @param travelID String
      */
-    public void updateBusMatrix(Travel travel) {
-        centralPanel.updateMatrix(travel);
+    public void updateBusMatrix(String travelID) {
+        centralPanel.updateMatrix(salesDesk.searchTravel(travelID));
     }
 
 
@@ -188,19 +221,20 @@ public class MainFrame extends JFrame{
      * @param newSeat Integer
      */
     public void setSelectedSeat(Box newSeat) {
-        if (selectedSeat != null) {
-            selectedSeat.deselect();
-        }
-        selectedSeat = newSeat;
-        if(newSeat.isOccupied()){
-            southPanel.changeToDeallocate();
-        } else {
-            southPanel.changeToAssign();
-        }
-        if(!isOutOfDate()){
-            southPanel.stateAssignDeallocateButtons(true);
+        if (selectedSeat != null || newSeat == null) {
+            selectedSeat.unselect();
+            southPanel.stateAssignDeallocateButtons(false);
         }
 
+        selectedSeat = newSeat;
+        if (!isOutOfDate() && newSeat != null){
+            southPanel.stateAssignDeallocateButtons(true);
+            if (newSeat.isOccupied()) {
+                southPanel.changeToDeallocate();
+            } else {
+                southPanel.changeToAssign();
+            }
+        }
     }
 
 
@@ -219,13 +253,15 @@ public class MainFrame extends JFrame{
     public void assignSeat(){
         Passenger newPassenger = askPassengerInfo();
         if(newPassenger != null) {
-            viewListener.producedEvent(ViewListener.Event.NEW_PASSENGER, newPassenger);
-            viewListener.producedEvent(ViewListener.Event.ASSIGN,
-                    new String[]{getSelectedTravel(),
-                            newPassenger.getDni(),
-                            String.valueOf(getSelectedSeat().getSeatNumber())});
-            getSelectedSeat().setAssigned(newPassenger.getDni());
-            southPanel.changeToDeallocate();
+            viewListener.producedEvent(
+                    ViewListener.Event.NEW_PASSENGER,
+                    newPassenger);
+            viewListener.producedEvent(
+                    ViewListener.Event.ASSIGN,
+                    new Object[]{
+                            salesDesk.searchTravel(getSelectedTravel()),
+                            newPassenger,
+                            getSelectedSeat().getSeatNumber()});
         }
     }
 
@@ -234,11 +270,13 @@ public class MainFrame extends JFrame{
      * Deallocates a seat on a travel for a passenger.
      */
     public void deallocateSeat() {
-        viewListener.producedEvent(ViewListener.Event.DELETE_PASSENGER, getSelectedSeat().getDni());
+        viewListener.producedEvent(
+                ViewListener.Event.DELETE_PASSENGER,
+                getSelectedSeat().getDni());
         viewListener.producedEvent(ViewListener.Event.DEALLOCATE,
-                new String[] {getSelectedTravel(), String.valueOf(getSelectedSeat().getSeatNumber())});
-        getSelectedSeat().setDeallocated();
-        southPanel.changeToAssign();
+                new Object[] {
+                        salesDesk.searchTravel(getSelectedTravel()),
+                        getSelectedSeat().getSeatNumber()});
     }
 
 
@@ -265,9 +303,14 @@ public class MainFrame extends JFrame{
      */
     public Passenger askPassengerInfo(){
         StringBuilder data = new StringBuilder();
+        String dialogInput;
         Passenger passenger;
         for (int i = 0; i < 3; i++) {
-            data.append(JOptionPane.showInputDialog(NEW_PASSENGER_QUESTIONS[i] + COLON)).append(ELEMENTS_SEPARATOR);
+            dialogInput = JOptionPane.showInputDialog(NEW_PASSENGER_QUESTIONS[i] + COLON);
+            if(dialogInput == null){
+                return null;
+            }
+            data.append(dialogInput + ELEMENTS_SEPARATOR);
         }
         try{
             passenger = new Passenger(data.toString());
@@ -279,4 +322,18 @@ public class MainFrame extends JFrame{
 
     }
 
+
+    /**
+     * Receives evetns and perform different actions depending on the event.
+     * @param event PropertyChangeEvent
+     */
+    @Override
+    public void propertyChange(PropertyChangeEvent event) {
+        switch(event.getPropertyName()){
+            case "SEAT_CHANGE":
+                updateBusMatrix(getSelectedTravel());
+                setSelectedSeat(null);
+                break;
+        }
+    }
 }

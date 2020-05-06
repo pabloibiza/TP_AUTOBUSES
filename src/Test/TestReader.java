@@ -19,6 +19,6 @@ public class TestReader {
     private static final String TRAVELS_STATUS_FILE_PATH = "src/storage/travels/status.csv";
 
     public static void main(String[] args) {
-        Office office = new Office();
+        Office office = Office.getSingletonInstance();
     }
 }

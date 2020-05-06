@@ -9,12 +9,15 @@
 
 package Model;
 
+import java.beans.PropertyChangeListener;
 import java.io.*;
 import java.util.*;
 
+
 public class SalesDesk {
-    private static Collection<Passenger> passengers;
-    private static Collection<Travel> travels;
+    private static SalesDesk salesDesk;
+    private static Set<Passenger> passengers;
+    private static Set<Travel> travels;
     private static final String ELEMENTS_SEPARATOR = ",";
     private static final String DISTRIBUTION_SEPARATOR = "x";
     private static final String COLON = ": ";
@@ -25,6 +28,7 @@ public class SalesDesk {
     private static final String SEAT = "SEAT ";
     private static final String ROUTE_SHEET_FILE_ESXTENSION = ".txt";
     private static final String  SHEET_NAME_TEXT = "_ROUTE_SHEET";
+    private static final String INSTANCE_ALREADY_CREATED = "Is not possible to create more than one instance of ";
     private static final String[] COLUMNS_DESIGNATION = {"A", "B", "C", "D", "E", "F"};
     private static final int MINUM_SIZE_BACK_DOOR = 7;
 
@@ -32,8 +36,8 @@ public class SalesDesk {
      * Constructor method. Creates an empty office.
      */
     public SalesDesk() {
-        passengers = new ArrayList<>();
-        travels = new ArrayList<>();
+        passengers = Collections.synchronizedSet(new HashSet<Passenger>());
+        travels =  Collections.synchronizedSet(new HashSet<Travel>());
     }
 
     /**
@@ -42,13 +46,43 @@ public class SalesDesk {
      * @param travelsFile String
      * @param travelsStatusFile String
      */
-    public SalesDesk(String passengersFile, String travelsFile, String travelsStatusFile) {
-        passengers = new ArrayList<>();
-        travels = new ArrayList<>();
+    private SalesDesk(String passengersFile, String travelsFile, String travelsStatusFile) {
+        passengers = Collections.synchronizedSet(new HashSet<Passenger>());
+        travels =  Collections.synchronizedSet(new HashSet<Travel>());
         readTravels(travelsFile);
         readPassengers(passengersFile);
         readTravelsStatus(travelsStatusFile);
     }
+
+
+    /**
+     * Creates a singleton instance.
+     * @param passengersFile String
+     * @param travelsFile String
+     * @param travelsStatusFile String
+     * @return SalesDesk
+     */
+    public static synchronized SalesDesk getSingletonInstance(String passengersFile, String travelsFile, String travelsStatusFile) {
+        if (salesDesk == null){
+            salesDesk = new SalesDesk(passengersFile, travelsFile, travelsStatusFile);
+        }
+        else{
+            System.out.println(INSTANCE_ALREADY_CREATED + salesDesk.getClass().getSimpleName());
+        }
+        return salesDesk;
+    }
+
+
+    /**
+     * Avoids cloning this object.
+     * @return
+     * @throws CloneNotSupportedException
+     */
+    @Override
+    public Object clone() throws CloneNotSupportedException {
+        throw new CloneNotSupportedException();
+    }
+
 
     /**
      * Adds a new passenger. Returns true in case of success.
@@ -93,52 +127,6 @@ public class SalesDesk {
 
 
     /**
-     * Deletes a travel.
-     * @param travel Model.Travel
-     * @return boolean
-     */
-    public boolean deleteTravel (Travel travel) {
-        if(searchTravel(travel.getId()) != null) {
-            travels.remove(travel);
-            return true;
-        }
-        return false;
-    }
-
-
-    /**
-     * Modifies a passenger. Returns true in case of success.
-     * @param dni String
-     * @param updatedPassenger Model.Passenger
-     * @return boolean
-     */
-    public boolean modifyPassenger (String dni, Passenger updatedPassenger) {
-        if(searchPassenger(dni) != null) {
-            passengers.remove(searchPassenger(dni));
-            passengers.add(updatedPassenger);
-            return true;
-        }
-        return false;
-    }
-
-
-    /**
-     * Modifies a travel. Returns true in case of success.
-     * @param id String
-     * @param updatedTravel Model.Travel.
-     * @return boolean.
-     */
-    public boolean modifyTravel (String id, Travel updatedTravel) {
-        if(searchTravel(id) != null){
-            travels.remove(searchTravel(id));
-            travels.add(updatedTravel);
-            return true;
-        }
-        return false;
-    }
-
-
-    /**
      * Returns the passenger with the received DNI. In case of not success returns null.
      * @param dni String
      * @return Model.Passenger
@@ -165,38 +153,6 @@ public class SalesDesk {
             }
         }
         return null;
-    }
-
-
-    /**
-     * Lists the passengers.
-     * @return StringBuilder
-     */
-    public StringBuilder listPassengers (){
-        StringBuilder passengersList = new StringBuilder();
-
-        Iterator it = passengers.iterator();
-        while(it.hasNext()) {
-            Passenger element = (Passenger) it.next();
-            passengersList.append(element.toString()).append("\n");
-        }
-        return passengersList;
-    }
-
-
-    /**
-     * Lists the travels.
-     * @return StringBuilder
-     */
-    public StringBuilder listTravels (){
-        StringBuilder travelsList = new StringBuilder();
-
-        Iterator it = travels.iterator();
-        while(it.hasNext()) {
-            Travel element = (Travel) it.next();
-            travelsList.append(element.toString()).append("\n");
-        }
-        return travelsList;
     }
 
 
@@ -426,16 +382,14 @@ public class SalesDesk {
      * @param date String
      * @return Collection LinkedList
      */
-    public ArrayList searchTravelsPerDate(GregorianCalendar date){
-        ArrayList foundTravels = new ArrayList();
+    public List searchTravelsPerDate(GregorianCalendar date){
+        List foundTravels = new ArrayList();
         int day = date.get(GregorianCalendar.DAY_OF_MONTH);
         int month = date.get(GregorianCalendar.MONTH);
         int year = date.get(GregorianCalendar.YEAR);
 
-        Iterator it = travels.iterator();
-        while(it.hasNext()) {
-            Travel element = (Travel) it.next();
-            if(element != null &&
+        for (Travel element : travels) {
+            if (element != null &&
                     element.getDay() == day &&
                     element.getMonth() == month &&
                     element.getYear() == year) {
@@ -443,5 +397,16 @@ public class SalesDesk {
             }
         }
         return foundTravels;
+    }
+
+
+    /**
+     * Sets and observer for all travel.
+     * @param observer PropertyChangeListener
+     */
+    public void setTravelsObserver(PropertyChangeListener observer){
+        for (Travel travel : travels) {
+            travel.addObserver(observer);
+        }
     }
 }

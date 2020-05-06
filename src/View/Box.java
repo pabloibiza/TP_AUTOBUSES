@@ -10,17 +10,25 @@
 
 package View;
 
+import Model.Passenger;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
+
 public class Box extends JButton {
+    private static final String TEXT_SPACER = " ";
+    private static final String ELEMENTS_SEPARATOR = ",";
+
     private MainFrame mainFrame;
     private int seatNumber;
-    private String dni;
+    private Passenger passenger;
     private boolean inUse;
-    private Box box = this;
+    private boolean selected;
+    private String dni;
+    private String nameAndSurnames;
     private Color defaultColor = getBackground();
     private Color darkerGreen = new Color(31, 155, 8);
     private Color darkerRed = new Color(192, 25, 8);
@@ -30,24 +38,35 @@ public class Box extends JButton {
      * Constructor method.
      * @param mainFrame MainFrame
      * @param seatNumber Integer
-     * @param dni String
+     * @param passenger Passenger
      */
-    public Box(MainFrame mainFrame, int seatNumber, String dni) {
+    public Box(MainFrame mainFrame, int seatNumber, Passenger passenger) {
         this.mainFrame = mainFrame;
         this.seatNumber = seatNumber;
-        this.dni = dni;
+        this.passenger = passenger;
+        selected = false;
         this.setText(String.valueOf(seatNumber));
-        if(dni != null) {
-            setAssigned(dni);
+        if(passenger != null) {
+            setAssigned(passenger);
+            dni = passenger.getDni();
+            nameAndSurnames = passenger.toString().split(ELEMENTS_SEPARATOR)[1] + TEXT_SPACER +
+                    passenger.toString().split(ELEMENTS_SEPARATOR)[2];
+            setToolTipText(nameAndSurnames + ELEMENTS_SEPARATOR + dni);
         } else {
             setDeallocated();
+            setToolTipText("");
         }
 
         this.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                mainFrame.setSelectedSeat(box);
-                select();
+                if(!selected) {
+                    mainFrame.setSelectedSeat(Box.this);
+                    select();
+                } else {
+                    mainFrame.setSelectedSeat(null);
+                    unselect();
+                }
             }
         });
     }
@@ -63,10 +82,10 @@ public class Box extends JButton {
 
     /**
      * Sets the id for the Box, sets the Box status variable to true and changes the color to blue.
-     * @param newDni String
+     * @param newPassenger Passenger
      */
-    public void setAssigned(String newDni) {
-        dni = newDni;
+    public void setAssigned(Passenger newPassenger) {
+        passenger = newPassenger;
         inUse = true;
         this.setForeground(darkerRed);
     }
@@ -76,7 +95,7 @@ public class Box extends JButton {
      * Removes de associated id, sets the Box status variable to false, and changes the color to green.
      */
     public void setDeallocated(){
-        dni = "";
+        passenger = null;
         inUse = false;
         this.setForeground(darkerGreen);
     }
@@ -105,7 +124,7 @@ public class Box extends JButton {
      * @return String
      */
     public String getDni(){
-        return dni;
+        return passenger.getDni();
     }
 
 
@@ -113,6 +132,7 @@ public class Box extends JButton {
      * Selects the button.
      */
     public void select(){
+        selected = true;
         setBackground(Color.YELLOW);
         setOpaque(true);
         setBorderPainted(true);
@@ -122,7 +142,8 @@ public class Box extends JButton {
     /**
      * Deselects the button.
      */
-    public void deselect() {
+    public void unselect() {
+        selected = false;
         setBackground(defaultColor);
         setOpaque(false);
     }

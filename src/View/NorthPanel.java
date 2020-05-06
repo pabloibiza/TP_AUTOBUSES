@@ -16,6 +16,7 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.*;
+import java.util.List;
 
 
 public class NorthPanel extends JPanel {
@@ -23,7 +24,6 @@ public class NorthPanel extends JPanel {
     private static final String TEXT_SPACER = " ";
 
     private MainFrame mainFrame;
-    private ViewListener viewListener;
     private JLabel travelsLabel;
     private JComboBox travelsComboBox;
 
@@ -33,9 +33,8 @@ public class NorthPanel extends JPanel {
      *
      * @param mainFrame MainFrame
      */
-    public NorthPanel(MainFrame mainFrame, ViewListener viewListener) {
+    public NorthPanel(MainFrame mainFrame) {
         this.mainFrame = mainFrame;
-        this.viewListener = viewListener;
         this.setLayout(new GridLayout(1, 3, 5, 5));
         buildPanel();
     }
@@ -55,7 +54,7 @@ public class NorthPanel extends JPanel {
             @Override
             public void actionPerformed(ActionEvent e) {
                 try{
-                    viewListener.producedEvent(ViewListener.Event.VIEW_SEATS, getSelectedTravel());
+                    mainFrame.updateBusMatrix(getSelectedTravel());
                     mainFrame.travelSelected(getSelectedTravel());
                 } catch (NullPointerException nullPointerException){
                     mainFrame.cleanMatrix();
@@ -70,7 +69,7 @@ public class NorthPanel extends JPanel {
      * are disabled and vice versa).
      * @param travels Collection
      */
-    public void updateTravels(ArrayList travels){
+    public void updateTravels(List<Travel> travels){
         String[] tokens;
         String elementName;
         travelsComboBox.removeAllItems();
@@ -106,12 +105,10 @@ public class NorthPanel extends JPanel {
      * @param travels ArrayList
      * @return ArrayList
      */
-    private ArrayList sortTravels(ArrayList travels){
+    private List<Travel> sortTravels(List<Travel> travels){
         Collections.sort(travels, new Comparator<Travel>(){
-
             @Override
             public int compare(Travel t1, Travel t2) {
-
                 if(t1.getOrigin().compareToIgnoreCase(t2.getOrigin()) == 0) {
                     if(t1.getDestiny().compareToIgnoreCase(t2.getDestiny()) == 0) {
                         if(t1.getHour().compareTo(t2.getHour()) == 0){

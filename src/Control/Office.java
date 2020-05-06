@@ -13,6 +13,8 @@ import Model.Passenger;
 import Model.SalesDesk;
 import Model.Travel;
 import View.MainFrame;
+import com.sun.tools.javac.Main;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.GregorianCalendar;
@@ -26,20 +28,46 @@ public class Office implements ViewListener {
     private static final String ERROR_SAVING_PASSENGERS = "Error while saving changes to passengers file";
     private static final String ERROR_SAVING_TRAVELS_STATUS = "Error while saving changes to travels status file";
     private static final String PASSENGER_NOT_EXISTANT = "Passenger doesn't exists";
-    private static final String PASSENGER_ALREADY_EXISTS = "Passenger already exists for another travel, " +
-            "it will be also added in this one";
-    private static final String TRAVEL_ALREADY_ADDED = "Travel already added";
+    private static final String INSTANCE_ALREADY_CREATED = "Is not possible to create more than one instance of ";
 
     private SalesDesk salesDesk;
     private MainFrame mainFrame;
+    private static Office office;
 
 
     /**
      * Constructor method.
      */
     public Office(){
-        salesDesk = new SalesDesk(PASSENGERS_FILE_PATH, TRAVELS_FILE_PATH, TRAVELS_STATUS_FILE_PATH);
-        mainFrame = new MainFrame(this);
+        salesDesk = SalesDesk.getSingletonInstance(PASSENGERS_FILE_PATH, TRAVELS_FILE_PATH, TRAVELS_STATUS_FILE_PATH);
+        mainFrame = MainFrame.getSingletonInstance(this, salesDesk);
+        salesDesk.setTravelsObserver(mainFrame);
+    }
+
+
+    /**
+     * Creates a singleton instance.
+     * @return Office
+     */
+    public static synchronized Office getSingletonInstance() {
+        if ( office == null){
+            office = new Office();
+        }
+        else{
+            System.out.println(INSTANCE_ALREADY_CREATED + office.getClass().getSimpleName());
+        }
+        return office;
+    }
+
+
+    /**
+     * Avoids cloning this object.
+     * @return
+     * @throws CloneNotSupportedException
+     */
+    @Override
+    public Object clone() throws CloneNotSupportedException {
+        throw new CloneNotSupportedException();
     }
 
 
@@ -64,24 +92,11 @@ public class Office implements ViewListener {
 
 
     /**
-     * Creates a new travel and saves all travels.
-     * @param travel Travel
-     */
-    private void newTravel(Travel travel){
-        if(!salesDesk.addTravel(travel)){
-            mainFrame.errorMessage(TRAVEL_ALREADY_ADDED, null);
-        }
-    }
-
-
-    /**
      * Adds a new passenger and saves all passengers.
      * @param passenger Passenger
      */
     private void newPassenger(Passenger passenger){
-        if (!salesDesk.addPassenger(passenger)) {
-            mainFrame.infoMessage(PASSENGER_ALREADY_EXISTS);
-        }
+        salesDesk.addPassenger(passenger);
         try {
             salesDesk.savePassengers(PASSENGERS_FILE_PATH);
         } catch (IOException e) {
@@ -107,25 +122,6 @@ public class Office implements ViewListener {
 
 
     /**
-     * Updates the travels list for a date in the view.
-     * @param date String
-     */
-    private void updateTravelsPerDate(GregorianCalendar date){
-        ArrayList result = salesDesk.searchTravelsPerDate(date);
-        mainFrame.updateTravels(result);
-    }
-
-
-    /**
-     * Shows the bus seats plan for the given id.
-     * @param id String
-     */
-    private void viewSeats(String id){
-        mainFrame.updateBusMatrix(salesDesk.searchTravel(id));
-    }
-
-
-    /**
      * Generates the route sheet for the received travel id.
      * @param id String
      * @throws IOException
@@ -140,10 +136,10 @@ public class Office implements ViewListener {
      * Assigns a seat for a passenger on a travel.
      * @param assignationData String[] [travel,passenger,seat]
      */
-    private void assignSeat(String[] assignationData) {
-        Travel travel = salesDesk.searchTravel(assignationData[0]);
-        Passenger passenger = salesDesk.searchPassenger(assignationData[1]);
-        int seat = Integer.parseInt(assignationData[2]);
+    private void assignSeat(Object[] assignationData) {
+        Travel travel = (Travel) assignationData[0];
+        Passenger passenger = (Passenger) assignationData[1];
+        int seat = (Integer) assignationData[2];
         salesDesk.assignSeat(travel, passenger, seat);
         try {
             salesDesk.saveTravelsStatus(TRAVELS_STATUS_FILE_PATH);
@@ -157,9 +153,9 @@ public class Office implements ViewListener {
      * Unassigns a seat for a passenger.
      * @param unassignationData String[] [travel, seat]
      */
-    private void unassignSeat(String[] unassignationData) {
-        Travel travel = salesDesk.searchTravel(unassignationData[0]);
-        int seat = Integer.parseInt(unassignationData[1]);
+    private void unassignSeat(Object[] unassignationData) {
+        Travel travel = (Travel) unassignationData[0];
+        int seat = (Integer) unassignationData[1];
         salesDesk.deallocateSeat(travel, seat);
         try {
             salesDesk.saveTravelsStatus(TRAVELS_STATUS_FILE_PATH);
@@ -177,10 +173,6 @@ public class Office implements ViewListener {
     @Override
     public void producedEvent(Event event, Object object) {
         switch(event) {
-            case NEW_TRAVEL:
-                newTravel((Travel) object);
-                break;
-
             case NEW_PASSENGER:
                 newPassenger((Passenger) object);
                 break;
@@ -193,20 +185,12 @@ public class Office implements ViewListener {
                 exit();
                 break;
 
-            case SEARCH:
-                updateTravelsPerDate((GregorianCalendar) object);
-                break;
-
-            case VIEW_SEATS:
-                viewSeats((String) object);
-                break;
-
             case ASSIGN:
-                assignSeat((String[]) object);
+                assignSeat((Object[]) object);
                 break;
 
             case DEALLOCATE:
-                unassignSeat((String[]) object);
+                unassignSeat((Object[]) object);
                 break;
 
             case GENERATE_ROUTE_SHEET:

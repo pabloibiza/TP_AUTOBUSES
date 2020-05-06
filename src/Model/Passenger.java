@@ -18,11 +18,12 @@ public class Passenger {
     private String surname;
     private static final String ELEMENTS_SEPARATOR = ",";
 
+
     /**
      * Constructor method.
-     * @param dni
-     * @param name
-     * @param surname
+     * @param dni String
+     * @param name String
+     * @param surname String
      */
     public Passenger(String dni, String name, String surname){
         this.dni = dni;
@@ -30,6 +31,7 @@ public class Passenger {
         this.surname = surname;
 
     }
+
 
     /**
      * Constructor method to create a new Model.Passenger from the received String. The String contains all data
@@ -54,7 +56,7 @@ public class Passenger {
 
 
     /**
-     * Overwrited toString(). It returns a string composed by the DNI, name, and surname.
+     * Overrided toString(). It returns a string composed by the DNI, name, and surname.
      * @return String
      */
     @Override
@@ -65,8 +67,8 @@ public class Passenger {
 
     /**
      * Overwrited equals. Compares an object with this passenger.
-     * @param obj
-     * @return
+     * @param obj Object
+     * @return Object
      */
     @Override
     public boolean equals(Object obj){
@@ -78,8 +80,20 @@ public class Passenger {
 
 
     /**
+     * Overwrited hashCode.
+     * @return Integer
+     */
+    @Override
+    public int hashCode() {
+        int result = 23;
+        result = 19 * result + name.hashCode() + name.hashCode();
+        return 19 * result + dni.hashCode();
+    }
+
+
+    /**
      * Saves a contact throw the receives PrintWriter.
-     * @param printWriter
+     * @param printWriter PrintWriter
      */
     public void save(PrintWriter printWriter){
         printWriter.println(this.toString());

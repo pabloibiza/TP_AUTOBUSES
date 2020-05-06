@@ -9,6 +9,8 @@
 
 package Model;
 
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.io.PrintWriter;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
@@ -22,24 +24,30 @@ public class Travel {
     private int seatsNumber;
     private Pair[] seats;
     private String seatsDistribution;
+    private String info;
+    private PropertyChangeSupport observers;
     private static final String ELEMENTS_SEPARATOR = ",";
     private static final String DISTRIBUTION_SEPARATOR = "x";
     private static final String DNI_SEAT_SEPARATOR = "-";
 
     /**
      * Constructor method.
-     * @param id
-     * @param origin
-     * @param destiny
-     * @param date
-     * @param seatsDistribution
+     * @param id String
+     * @param origin String
+     * @param destiny String
+     * @param date String
+     * @param seatsDistribution String
+     * @param info String
      */
-    public Travel(String id, String origin, String destiny, GregorianCalendar date, String seatsDistribution){
+    public Travel(String id, String origin, String destiny, GregorianCalendar date, String seatsDistribution,
+                  String info){
         this.id = id;
         this.origin = origin;
         this.destiny = destiny;
         this.date = date;
+        this.info = info;
         this.seatsDistribution = seatsDistribution;
+        observers = new PropertyChangeSupport(this);
 
         String[] distribution = seatsDistribution.split(DISTRIBUTION_SEPARATOR);
         seatsNumber = (Integer.parseInt(distribution[0]) * Integer.parseInt(distribution[1])) + 1;
@@ -58,6 +66,8 @@ public class Travel {
         destiny = tokens[2];
         date = readGregorianCalendar(line);
         seatsDistribution = tokens[8];
+        info = tokens[9];
+        observers = new PropertyChangeSupport(this);
 
         String[] distribution = seatsDistribution.split(DISTRIBUTION_SEPARATOR);
         seatsNumber = Integer.parseInt(distribution[0]) * Integer.parseInt(distribution[1]) + 1;
@@ -179,6 +189,14 @@ public class Travel {
         return seatsNumber;
     }
 
+    /**
+     * Returns info.
+     * @return String
+     */
+    public String getInfo(){
+        return info;
+    }
+
 
     /**
      * Overwrited equals. Compares an object with this travel.
@@ -191,6 +209,21 @@ public class Travel {
         if(!(obj instanceof Travel)) return false;
         Travel tmp = (Travel)obj;
         return Objects.equals(id, tmp.id);
+    }
+
+
+    /**
+     * Overwrited hashCode.
+     * @return Integer
+     */
+    @Override
+    public int hashCode() {
+        int result = 23;
+        result = 19 * result + origin.hashCode();
+        result = 19 * result + destiny.hashCode();
+        result = 19 * result + date.hashCode();
+        result = 19 * result + seatsDistribution.hashCode();
+        return 19 * result + id.hashCode();
     }
 
 
@@ -236,6 +269,7 @@ public class Travel {
     public boolean assignSeat(int seat, String passengerID){
             if(seats[seat] == null){
                 seats[seat] = new Pair<>(seat, passengerID);
+                observers.firePropertyChange("SEAT_CHANGE", null, null);
                 return true;
             }
             return false;
@@ -248,6 +282,7 @@ public class Travel {
      */
     public void deallocateSeat(int seat){
         seats[seat] = null;
+        observers.firePropertyChange("SEAT_CHANGE", null, null);
     }
 
 
@@ -279,5 +314,17 @@ public class Travel {
         }
         return passengerID;
     }
+
+
+    /**
+     * Adds an observer to this travel.
+     * @param observer PropertyChangeListener
+     */
+    public void addObserver(PropertyChangeListener observer) {
+        this.observers.addPropertyChangeListener(observer);
+    }
+
+
+
 }
 
