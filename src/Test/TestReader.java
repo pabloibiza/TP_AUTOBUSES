@@ -14,10 +14,6 @@ import Model.SalesDesk;
 
 public class TestReader {
 
-    private static final String PASSENGERS_FILE_PATH = "src/storage/passengers.csv";
-    private static final String TRAVELS_FILE_PATH = "src/storage/travels.csv";
-    private static final String TRAVELS_STATUS_FILE_PATH = "src/storage/travels/status.csv";
-
     public static void main(String[] args) {
         Office office = Office.getSingletonInstance();
     }

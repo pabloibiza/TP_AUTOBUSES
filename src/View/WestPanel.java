@@ -18,14 +18,7 @@ import java.util.Calendar;
 import java.util.GregorianCalendar;
 
 public class WestPanel extends JPanel {
-    private static final String SEARCH_BUTTON = "Search";
-    private static final String DAY_LABEL = "Day:";
-    private static final String MONTH_LABEL = "Month:";
-    private static final String YEAR_LABEL = "Year:";
-    private static final String DATE_LABEL = "DATE:";
-    private static final String[] months = {"January", "February", "March", "April", "May", "June", "July", "August",
-            "September", "October", "November", "December"};
-
+    private static final String COLON = ": ";
     private JComboBox<String> yearComboBox;
     private JComboBox<String> monthComboBox;
     private JComboBox<String> dayComboBox;
@@ -43,15 +36,17 @@ public class WestPanel extends JPanel {
     private GregorianCalendar actualDate;
     private int actualYear;
     private int actualMonth;
+    private Location local;
 
 
     /**
      * Constructor method.
      * @param mainframe MainFrame
      */
-    public WestPanel(MainFrame mainframe, ViewListener viewListener){
+    public WestPanel(MainFrame mainframe, ViewListener viewListener, Location local){
         this.mainFrame = mainframe;
         this.viewListener = viewListener;
+        this.local = local;
         this.setLayout(new GridLayout(5,1));
         buildPanel();
     }
@@ -67,14 +62,14 @@ public class WestPanel extends JPanel {
         yearComboBox = new JComboBox<>();
         monthComboBox = new JComboBox<String>();
         dayComboBox = new JComboBox<>();
-        searchButton = new JButton(SEARCH_BUTTON);
-        dayLabel = new JLabel(DAY_LABEL);
-        monthLabel = new JLabel(MONTH_LABEL);
-        yearLabel = new JLabel(YEAR_LABEL);
+        searchButton = new JButton(local.getLabel(local.SEARCH_BUTTON));
+        dayLabel = new JLabel(local.getLabel(local.DAY_LABEL) + COLON);
+        monthLabel = new JLabel(local.getLabel(local.MONTH_LABEL) + COLON);
+        yearLabel = new JLabel(local.getLabel(local.YEAR_LABEL) + COLON);
         actualDate = new GregorianCalendar();
         actualYear = actualDate.get(GregorianCalendar.YEAR);
         actualMonth = actualDate.get(GregorianCalendar.MONTH);
-        dateLabel = new JLabel(DATE_LABEL, SwingConstants.CENTER);
+        dateLabel = new JLabel(local.getLabel(local.DATE_LABEL) + COLON, SwingConstants.CENTER);
 
         //Adds elements to the panel.
         this.add(dateLabel);
@@ -97,8 +92,8 @@ public class WestPanel extends JPanel {
         yearComboBox.setSelectedItem(String.valueOf(actualYear));
 
         //Adds months to the month combo box.
-        for(int i = 0; i < months.length; i++){
-            monthComboBox.addItem(String.valueOf(months[i]));
+        for(int i = 0; i < 11; i++){
+            monthComboBox.addItem(String.valueOf(local.getLabel(local.MONTHS[i])));
         }
         monthComboBox.setSelectedIndex(actualMonth);
 

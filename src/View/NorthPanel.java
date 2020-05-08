@@ -9,7 +9,6 @@
 
 package View;
 
-import Control.ViewListener;
 import Model.Travel;
 import javax.swing.*;
 import java.awt.*;
@@ -20,12 +19,13 @@ import java.util.List;
 
 
 public class NorthPanel extends JPanel {
-    private static final String ROUTES = "ROUTES:";
     private static final String TEXT_SPACER = " ";
+    private static final String COLON = ": ";
 
     private MainFrame mainFrame;
     private JLabel travelsLabel;
     private JComboBox travelsComboBox;
+    private Location local;
 
 
     /**
@@ -33,8 +33,9 @@ public class NorthPanel extends JPanel {
      *
      * @param mainFrame MainFrame
      */
-    public NorthPanel(MainFrame mainFrame) {
+    public NorthPanel(MainFrame mainFrame, Location local) {
         this.mainFrame = mainFrame;
+        this.local = local;
         this.setLayout(new GridLayout(1, 3, 5, 5));
         buildPanel();
     }
@@ -44,7 +45,7 @@ public class NorthPanel extends JPanel {
      * Builds the panel.
      */
     private void buildPanel() {
-        travelsLabel = new JLabel(ROUTES, SwingConstants.RIGHT);
+        travelsLabel = new JLabel(local.getLabel(local.ROUTES) + COLON, SwingConstants.RIGHT);
         travelsComboBox = new JComboBox();
 
         this.add(travelsLabel);

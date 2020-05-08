@@ -9,6 +9,8 @@
 
 package Model;
 
+import View.Location;
+
 import java.beans.PropertyChangeListener;
 import java.io.*;
 import java.util.*;
@@ -16,29 +18,16 @@ import java.util.*;
 
 public class SalesDesk {
     private static SalesDesk salesDesk;
+    private Location location;
     private static Set<Passenger> passengers;
     private static Set<Travel> travels;
     private static final String ELEMENTS_SEPARATOR = ",";
     private static final String DISTRIBUTION_SEPARATOR = "x";
     private static final String COLON = ": ";
-    private static final String ORIGIN = "ORIGIN";
-    private static final String DESTINY = "DESTINY";
-    private static final String DATE = "DATE";
-    private static final String SEATS_PLAN = "SEATS_PLAN";
-    private static final String SEAT = "SEAT ";
     private static final String ROUTE_SHEET_FILE_ESXTENSION = ".txt";
-    private static final String  SHEET_NAME_TEXT = "_ROUTE_SHEET";
     private static final String INSTANCE_ALREADY_CREATED = "Is not possible to create more than one instance of ";
     private static final String[] COLUMNS_DESIGNATION = {"A", "B", "C", "D", "E", "F"};
     private static final int MINUM_SIZE_BACK_DOOR = 7;
-
-    /**
-     * Constructor method. Creates an empty office.
-     */
-    public SalesDesk() {
-        passengers = Collections.synchronizedSet(new HashSet<Passenger>());
-        travels =  Collections.synchronizedSet(new HashSet<Travel>());
-    }
 
     /**
      * Constructor method. Creates an office and loads the saved statuses of passengers and travels.
@@ -46,9 +35,11 @@ public class SalesDesk {
      * @param travelsFile String
      * @param travelsStatusFile String
      */
-    private SalesDesk(String passengersFile, String travelsFile, String travelsStatusFile) {
+    private SalesDesk(Location location, String passengersFile, String travelsFile, String travelsStatusFile) {
+        //Con los synchronized Sets se asegura la exclusión mutua a las Colecciones.
         passengers = Collections.synchronizedSet(new HashSet<Passenger>());
         travels =  Collections.synchronizedSet(new HashSet<Travel>());
+        this.location = location;
         readTravels(travelsFile);
         readPassengers(passengersFile);
         readTravelsStatus(travelsStatusFile);
@@ -62,9 +53,9 @@ public class SalesDesk {
      * @param travelsStatusFile String
      * @return SalesDesk
      */
-    public static synchronized SalesDesk getSingletonInstance(String passengersFile, String travelsFile, String travelsStatusFile) {
+    public static synchronized SalesDesk getSingletonInstance(Location location, String passengersFile, String travelsFile, String travelsStatusFile) {
         if (salesDesk == null){
-            salesDesk = new SalesDesk(passengersFile, travelsFile, travelsStatusFile);
+            salesDesk = new SalesDesk(location, passengersFile, travelsFile, travelsStatusFile);
         }
         else{
             System.out.println(INSTANCE_ALREADY_CREATED + salesDesk.getClass().getSimpleName());
@@ -75,7 +66,7 @@ public class SalesDesk {
 
     /**
      * Avoids cloning this object.
-     * @return
+     * @return Object
      * @throws CloneNotSupportedException
      */
     @Override
@@ -201,20 +192,20 @@ public class SalesDesk {
      */
     public void generateTravelSheet(Travel travel) {
         StringBuilder plan = new StringBuilder();
-        plan.append(ORIGIN).append(COLON).append(travel.getOrigin()).append("\n");
-        plan.append(DESTINY).append(COLON).append(travel.getDestiny()).append("\n");
-        plan.append(DATE).append(COLON).append(travel.getDateToPrint()).append("\n");
-        plan.append(SEATS_PLAN).append(COLON).append(travel.getSeatsDistribution()).append("\n\n");
+        plan.append(location.getLabel(location.ORIGIN)).append(COLON).append(travel.getOrigin()).append("\n");
+        plan.append(location.getLabel(location.DESTINY)).append(COLON).append(travel.getDestiny()).append("\n");
+        plan.append(location.getLabel(location.DATE)).append(COLON).append(travel.getDateToPrint()).append("\n");
+        plan.append(location.getLabel(location.SEATS_PLAN)).append(COLON).append(travel.getSeatsDistribution()).append("\n\n");
         plan.append(seatsStatus(travel));
         plan.append("\n\n");
 
         for(int i = 0; i < travel.getSeatsNumber(); i++) {
             if(!travel.isSeatFree(i)) {
-                plan.append(SEAT).append(i).append(COLON).append(whoIsSited(travel, i)).append("\n");
+                plan.append(location.getLabel(location.SEAT)).append(i).append(COLON).append(whoIsSited(travel, i)).append("\n");
             }
         }
 
-        String name = travel.getId()+ SHEET_NAME_TEXT + ROUTE_SHEET_FILE_ESXTENSION;
+        String name = travel.getId()+ location.getLabel(location.SHEET_NAME_TEXT) + ROUTE_SHEET_FILE_ESXTENSION;
         PrintWriter file = null;
         try {
             file = new PrintWriter( new BufferedWriter( new FileWriter(name)));

@@ -12,35 +12,55 @@ package Control;
 import Model.Passenger;
 import Model.SalesDesk;
 import Model.Travel;
+import View.Location;
 import View.MainFrame;
-import com.sun.tools.javac.Main;
 
+import javax.swing.*;
+import java.io.FileInputStream;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.GregorianCalendar;
+import java.util.Locale;
+import java.util.MissingResourceException;
+import java.util.Properties;
+
+import static java.lang.Thread.sleep;
 
 
 public class Office implements ViewListener {
-    private static final String PASSENGERS_FILE_PATH = "src/storage/passengers.csv";
-    private static final String TRAVELS_FILE_PATH = "src/storage/travels.csv";
-    private static final String TRAVELS_STATUS_FILE_PATH = "src/storage/travels/status.csv";
-    private static final String SUCCESSFUL_ROUTE_GENERATED = "Route sheet generated successfully";
-    private static final String ERROR_SAVING_PASSENGERS = "Error while saving changes to passengers file";
-    private static final String ERROR_SAVING_TRAVELS_STATUS = "Error while saving changes to travels status file";
-    private static final String PASSENGER_NOT_EXISTANT = "Passenger doesn't exists";
-    private static final String INSTANCE_ALREADY_CREATED = "Is not possible to create more than one instance of ";
+    private static final String PASSENGERS_FILE_PATH = "src/storage/data/passengers.csv";
+    private static final String TRAVELS_FILE_PATH = "src/storage/data/travels.csv";
+    private static final String TRAVELS_STATUS_FILE_PATH = "src/storage/data/status.csv";
+    private static final String CONFIG_FILE_PATH  = "src/storage/conf/config.properties";
+    public static final String LANGUAGE_PARAMETER = "language";
+    public static final String COUNTRY_PARAMETER = "country";
+    private static final String INSTANCE_ALREADY_CREATED="Is not possible to create more than one instance of ";
+    private static final String ERROR_CONFIGS = "Error loading configuration";
+    private static final String LANGUAGE_FILE_NOT_FOUND = "The selected language file was not found";
 
     private SalesDesk salesDesk;
     private MainFrame mainFrame;
     private static Office office;
+    private Location location;
+    private String language;
+    private String country;
+    private Properties config;
+
 
 
     /**
      * Constructor method.
      */
     public Office(){
-        salesDesk = SalesDesk.getSingletonInstance(PASSENGERS_FILE_PATH, TRAVELS_FILE_PATH, TRAVELS_STATUS_FILE_PATH);
-        mainFrame = MainFrame.getSingletonInstance(this, salesDesk);
+        loadConfigs();
+        //If it can't loads any location, the application closes.
+        try {
+            location = Location.getSingletonInstance(language, country);
+        } catch (MissingResourceException e) {
+            JOptionPane.showMessageDialog( new JFrame(),LANGUAGE_FILE_NOT_FOUND, "",JOptionPane.ERROR_MESSAGE);
+            System.exit(1);
+        }
+
+        salesDesk = SalesDesk.getSingletonInstance(location, PASSENGERS_FILE_PATH, TRAVELS_FILE_PATH, TRAVELS_STATUS_FILE_PATH);
+        mainFrame = MainFrame.getSingletonInstance(this, salesDesk, location);
         salesDesk.setTravelsObserver(mainFrame);
     }
 
@@ -62,12 +82,35 @@ public class Office implements ViewListener {
 
     /**
      * Avoids cloning this object.
-     * @return
+     * @return Object
      * @throws CloneNotSupportedException
      */
     @Override
     public Object clone() throws CloneNotSupportedException {
         throw new CloneNotSupportedException();
+    }
+
+
+    /**
+     * Loads the configuration from a properties file.
+     */
+    private void loadConfigs() {
+        try {
+            config = new Properties();
+            config.load(new FileInputStream(CONFIG_FILE_PATH));
+            language = config.getProperty(LANGUAGE_PARAMETER);
+            country = config.getProperty(COUNTRY_PARAMETER);
+
+            if (language.equals("") || country.equals("")){
+                language = Locale.getDefault().getLanguage();
+                country = Locale.getDefault().getCountry();
+            }
+        } catch (Exception e) {
+            mainFrame.errorMessage(ERROR_CONFIGS,e);
+        } finally {
+            config.setProperty(LANGUAGE_PARAMETER, language);
+            config.setProperty(COUNTRY_PARAMETER, country);
+        }
     }
 
 
@@ -100,7 +143,7 @@ public class Office implements ViewListener {
         try {
             salesDesk.savePassengers(PASSENGERS_FILE_PATH);
         } catch (IOException e) {
-            mainFrame.errorMessage(ERROR_SAVING_PASSENGERS, e);
+            mainFrame.errorMessage(location.getLabel(location.ERROR_SAVING_PASSENGERS), e);
         }
     }
 
@@ -111,12 +154,12 @@ public class Office implements ViewListener {
      */
     private void deletePassenger(String id){
         if(!salesDesk.deletePassenger(salesDesk.searchPassenger(id))){
-            mainFrame.errorMessage(PASSENGER_NOT_EXISTANT, null);
+            mainFrame.errorMessage(location.getLabel(location.PASSENGER_NOT_EXISTANT), null);
         };
         try {
             salesDesk.savePassengers(PASSENGERS_FILE_PATH);
         } catch (IOException e) {
-            mainFrame.errorMessage(ERROR_SAVING_PASSENGERS, e);
+            mainFrame.errorMessage(location.getLabel(location.ERROR_SAVING_PASSENGERS), e);
         }
     }
 
@@ -128,7 +171,7 @@ public class Office implements ViewListener {
      */
     private void generateRouteSheet(String id) {
         salesDesk.generateTravelSheet(salesDesk.searchTravel(id));
-        mainFrame.infoMessage(SUCCESSFUL_ROUTE_GENERATED);
+        mainFrame.infoMessage(location.getLabel(location.SUCCESSFUL_ROUTE_GENERATED));
     }
 
 
@@ -144,7 +187,7 @@ public class Office implements ViewListener {
         try {
             salesDesk.saveTravelsStatus(TRAVELS_STATUS_FILE_PATH);
         } catch (IOException e) {
-            mainFrame.errorMessage(ERROR_SAVING_TRAVELS_STATUS, e);
+            mainFrame.errorMessage(location.getLabel(location.ERROR_SAVING_TRAVELS_STATUS), e);
         }
     }
 
@@ -160,7 +203,7 @@ public class Office implements ViewListener {
         try {
             salesDesk.saveTravelsStatus(TRAVELS_STATUS_FILE_PATH);
         } catch (IOException e) {
-            mainFrame.errorMessage(ERROR_SAVING_TRAVELS_STATUS, e);
+            mainFrame.errorMessage(location.getLabel(location.ERROR_SAVING_TRAVELS_STATUS), e);
         }
     }
 

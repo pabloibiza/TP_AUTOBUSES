@@ -8,7 +8,7 @@
 package Control;
 
 public interface ViewListener {
-    public enum Event { NEW_TRAVEL, NEW_PASSENGER, DELETE_PASSENGER, EXIT, ASSIGN, GENERATE_ROUTE_SHEET, DEALLOCATE}
+    public enum Event {NEW_PASSENGER, DELETE_PASSENGER, EXIT, ASSIGN, GENERATE_ROUTE_SHEET, DEALLOCATE}
 
     public void producedEvent(Event event, Object obj);
 

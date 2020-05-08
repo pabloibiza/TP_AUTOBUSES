@@ -17,13 +17,9 @@ import java.awt.event.ActionListener;
 
 
 public class SouthPanel extends JPanel {
-    private static final String ASSIGN = "Assign";
-    private static final String DEALLOCATE = "Deallocate";
-    private static final String GENERATE_ROUTE_SHEET = "Generate Route Sheet";
-
     private MainFrame mainFrame;
     private ViewListener viewListener;
-
+    private Location local;
     private JButton assignButton;
     private JButton deallocateButton;
     private JButton routeSheetButton;
@@ -33,9 +29,10 @@ public class SouthPanel extends JPanel {
      * Construtor method.
      * @param mainFrame MainFrame
      */
-    public SouthPanel(MainFrame mainFrame, ViewListener viewListener) {
+    public SouthPanel(MainFrame mainFrame, ViewListener viewListener, Location local) {
         this.mainFrame = mainFrame;
         this.viewListener = viewListener;
+        this.local = local;
         this.setLayout(new FlowLayout());
         buildPanel();
     }
@@ -44,9 +41,9 @@ public class SouthPanel extends JPanel {
      * Builds the panel.
      */
     private void buildPanel(){
-        assignButton = new JButton(ASSIGN);
-        deallocateButton = new JButton(DEALLOCATE);
-        routeSheetButton = new JButton(GENERATE_ROUTE_SHEET);
+        assignButton = new JButton(local.getLabel(local.ASSIGN));
+        deallocateButton = new JButton(local.getLabel(local.DEALLOCATE));
+        routeSheetButton = new JButton(local.getLabel(local.GENERATE_ROUTE_SHEET));
         this.add(assignButton);
         this.add(routeSheetButton);
 

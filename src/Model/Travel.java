@@ -1,5 +1,5 @@
 /*
- * Type class Model.Travel. Contains an id, origin, destiny, date and sets distribution.
+ * Type class Model.Travel. Contains an id, origin, destiny, date, seats distribution, and ifo about the bus.
  *
  * Model.Travel.java
  *

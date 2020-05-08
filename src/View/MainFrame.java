@@ -23,16 +23,8 @@ import java.util.GregorianCalendar;
 import java.util.List;
 
 public class MainFrame extends JFrame implements PropertyChangeListener{
-    private static final String WINDOW_TITLE = "BUS OFFICE";
-    private static final String INFO_WINDOW_TITLE = "INFO";
-    private static final String ERROR_WINDOW_TITLE = "ERROR";
-    private static final String NO_TRAVELS = "No travels found for this date.";
-    private static final String TRAVEL_OUT_OF_DATE = "This travel is out of date.";
-    private static final String FILL_ALL_GAPS = "All fields must be filled";
-    private static final String[] NEW_PASSENGER_QUESTIONS = {"DNI", "Name", "Surname"};
     private static final String COLON = ": ";
     private static final String ELEMENTS_SEPARATOR = ",";
-    private static final String INSTANCE_ALREADY_CREATED = "Is not possible to create more than one instance of ";
 
     private static MainFrame mainFrame;
     private ViewListener viewListener;
@@ -44,25 +36,27 @@ public class MainFrame extends JFrame implements PropertyChangeListener{
     private GregorianCalendar selectedDate;
     private String selectedTravel = "";
     private Box selectedSeat;
+    private Location local;
 
-    private MainFrame(ViewListener viewListener, SalesDesk salesDesk){
+    private MainFrame(ViewListener viewListener, SalesDesk salesDesk, Location local){
         super();
         this.viewListener = viewListener;
         this.salesDesk = salesDesk;
+        this.local = local;
         configureWindow();
 
-        westPanel = new WestPanel(this, viewListener);
+        westPanel = new WestPanel(this, viewListener, local);
         this.add(westPanel, BorderLayout.WEST);
 
-        northPanel = new NorthPanel(this);
+        northPanel = new NorthPanel(this, local);
         this.add(northPanel, BorderLayout.NORTH);
 
-        southPanel = new SouthPanel(this, viewListener);
+        southPanel = new SouthPanel(this, viewListener, local);
         this.add(southPanel, BorderLayout.SOUTH);
         southPanel.stateRouteSheetButton(false);
         southPanel.stateAssignDeallocateButtons(false);
 
-        centralPanel = new CentralPanel(this, salesDesk);
+        centralPanel = new CentralPanel(this, salesDesk, local);
         this.add(centralPanel, BorderLayout.CENTER);
 
         setVisible(true);
@@ -75,12 +69,12 @@ public class MainFrame extends JFrame implements PropertyChangeListener{
      * @param salesDesk SalesDesk
      * @return Mainframe
      */
-    public static synchronized MainFrame getSingletonInstance(ViewListener viewListener, SalesDesk salesDesk) {
+    public static synchronized MainFrame getSingletonInstance(ViewListener viewListener, SalesDesk salesDesk, Location local) {
         if (mainFrame == null){
-            mainFrame = new MainFrame(viewListener, salesDesk);
+            mainFrame = new MainFrame(viewListener, salesDesk, local);
         }
         else{
-            mainFrame.errorMessage(INSTANCE_ALREADY_CREATED + mainFrame.getClass().getSimpleName(), null);
+            mainFrame.errorMessage(local.getLabel(local.INSTANCE_ALREADY_CREATED) + mainFrame.getClass().getSimpleName(), null);
         }
         return mainFrame;
     }
@@ -100,7 +94,7 @@ public class MainFrame extends JFrame implements PropertyChangeListener{
      * Sets the window parameters.
      */
     private void configureWindow() {
-        this.setTitle(WINDOW_TITLE);
+        this.setTitle(local.getLabel(local.WINDOW_TITLE));
         this.setSize(900, 500);
         this.setLocationRelativeTo(null);
         this.setLayout(new BorderLayout(5,5));
@@ -155,7 +149,7 @@ public class MainFrame extends JFrame implements PropertyChangeListener{
             southPanel.stateRouteSheetButton(false);
         } else if(isOutOfDate()){
             southPanel.stateRouteSheetButton(true);
-            infoMessage(TRAVEL_OUT_OF_DATE);
+            infoMessage(local.getLabel(local.TRAVEL_OUT_OF_DATE));
         } else {
             southPanel.stateRouteSheetButton(true);
         }
@@ -177,7 +171,7 @@ public class MainFrame extends JFrame implements PropertyChangeListener{
     public void receivedListEmpty(){
         southPanel.stateRouteSheetButton(false);
         southPanel.stateAssignDeallocateButtons(false);
-        infoMessage(NO_TRAVELS);
+        infoMessage(local.getLabel(local.NO_TRAVELS));
     }
 
 
@@ -186,7 +180,10 @@ public class MainFrame extends JFrame implements PropertyChangeListener{
      * @param message String
      */
     public void infoMessage(String message){
-        JOptionPane.showMessageDialog(this, message, INFO_WINDOW_TITLE, JOptionPane.INFORMATION_MESSAGE);
+        JOptionPane.showMessageDialog(this,
+                message,
+                local.getLabel(local.INFO_WINDOW_TITLE),
+                JOptionPane.INFORMATION_MESSAGE);
     }
 
 
@@ -195,7 +192,10 @@ public class MainFrame extends JFrame implements PropertyChangeListener{
      * @param message String
      */
     public void errorMessage(String message, Exception e){
-        JOptionPane.showMessageDialog(this, message, ERROR_WINDOW_TITLE, JOptionPane.ERROR_MESSAGE);
+        JOptionPane.showMessageDialog(this,
+                message,
+                local.getLabel(local.ERROR_WINDOW_TITLE),
+                JOptionPane.ERROR_MESSAGE);
     }
 
 
@@ -306,7 +306,10 @@ public class MainFrame extends JFrame implements PropertyChangeListener{
         String dialogInput;
         Passenger passenger;
         for (int i = 0; i < 3; i++) {
-            dialogInput = JOptionPane.showInputDialog(NEW_PASSENGER_QUESTIONS[i] + COLON);
+            dialogInput = JOptionPane.showInputDialog(this,
+                    local.getLabel(local.NEW_PASSENGER_QUESTIONS[i]) + COLON,
+                    local.getLabel(local.NEW_PASSENGER_WINDOW_TITTLE),
+                    JOptionPane.QUESTION_MESSAGE);
             if(dialogInput == null){
                 return null;
             }
@@ -316,7 +319,7 @@ public class MainFrame extends JFrame implements PropertyChangeListener{
             passenger = new Passenger(data.toString());
             return passenger;
         } catch (ArrayIndexOutOfBoundsException e) {
-            infoMessage(FILL_ALL_GAPS);
+            infoMessage(local.getLabel(local.FILL_ALL_GAPS));
         }
         return null;
 
