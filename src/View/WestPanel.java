@@ -36,17 +36,17 @@ public class WestPanel extends JPanel {
     private GregorianCalendar actualDate;
     private int actualYear;
     private int actualMonth;
-    private Location local;
+    private Location location;
 
 
     /**
      * Constructor method.
      * @param mainframe MainFrame
      */
-    public WestPanel(MainFrame mainframe, ViewListener viewListener, Location local){
+    public WestPanel(MainFrame mainframe, ViewListener viewListener, Location location){
         this.mainFrame = mainframe;
         this.viewListener = viewListener;
-        this.local = local;
+        this.location = location;
         this.setLayout(new GridLayout(5,1));
         buildPanel();
     }
@@ -62,14 +62,14 @@ public class WestPanel extends JPanel {
         yearComboBox = new JComboBox<>();
         monthComboBox = new JComboBox<String>();
         dayComboBox = new JComboBox<>();
-        searchButton = new JButton(local.getLabel(local.SEARCH_BUTTON));
-        dayLabel = new JLabel(local.getLabel(local.DAY_LABEL) + COLON);
-        monthLabel = new JLabel(local.getLabel(local.MONTH_LABEL) + COLON);
-        yearLabel = new JLabel(local.getLabel(local.YEAR_LABEL) + COLON);
+        searchButton = new JButton(location.getLabel(location.SEARCH_BUTTON));
+        dayLabel = new JLabel(location.getLabel(location.DAY_LABEL) + COLON);
+        monthLabel = new JLabel(location.getLabel(location.MONTH_LABEL) + COLON);
+        yearLabel = new JLabel(location.getLabel(location.YEAR_LABEL) + COLON);
         actualDate = new GregorianCalendar();
         actualYear = actualDate.get(GregorianCalendar.YEAR);
         actualMonth = actualDate.get(GregorianCalendar.MONTH);
-        dateLabel = new JLabel(local.getLabel(local.DATE_LABEL) + COLON, SwingConstants.CENTER);
+        dateLabel = new JLabel(location.getLabel(location.DATE_LABEL) + COLON, SwingConstants.CENTER);
 
         //Adds elements to the panel.
         this.add(dateLabel);
@@ -93,7 +93,7 @@ public class WestPanel extends JPanel {
 
         //Adds months to the month combo box.
         for(int i = 0; i < 11; i++){
-            monthComboBox.addItem(String.valueOf(local.getLabel(local.MONTHS[i])));
+            monthComboBox.addItem(String.valueOf(location.getLabel(location.MONTHS[i])));
         }
         monthComboBox.setSelectedIndex(actualMonth);
 

@@ -11,6 +11,7 @@ package Model;
 
 import View.Location;
 
+import javax.swing.*;
 import java.beans.PropertyChangeListener;
 import java.io.*;
 import java.util.*;
@@ -36,7 +37,7 @@ public class SalesDesk {
      * @param travelsStatusFile String
      */
     private SalesDesk(Location location, String passengersFile, String travelsFile, String travelsStatusFile) {
-        //Con los synchronized Sets se asegura la exclusión mutua a las Colecciones.
+        //Con los synchronized Sets se asegura la exclusión mutua al acceder a las Colecciones.
         passengers = Collections.synchronizedSet(new HashSet<Passenger>());
         travels =  Collections.synchronizedSet(new HashSet<Travel>());
         this.location = location;
@@ -166,9 +167,13 @@ public class SalesDesk {
      * Deallocates the received seat to its passenger on the received travel.
      * @param travel Model.Travel
      * @param seat Ineger
+     * @return boolean
      */
-    public void deallocateSeat(Travel travel, int seat){
-        travel.deallocateSeat(seat);
+    public boolean deallocateSeat(Travel travel, int seat){
+        if (travel.isSeatFree(seat)){
+            return travel.deallocateSeat(seat);
+        }
+        return false;
     }
 
 
@@ -311,7 +316,9 @@ public class SalesDesk {
                 line = bufferedReader.readLine();
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            JOptionPane.showMessageDialog(null,
+                    location.getLabel(location.ERROR_READING_PASSENGERS),
+                    "", JOptionPane.ERROR_MESSAGE);
         }
     }
 
@@ -329,7 +336,9 @@ public class SalesDesk {
                 line = bufferedReader.readLine();
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            JOptionPane.showMessageDialog(null,
+                    location.getLabel(location.ERROR_READING_TRAVELS),
+                    "", JOptionPane.ERROR_MESSAGE);
         }
     }
 
@@ -347,7 +356,7 @@ public class SalesDesk {
                 Iterator it = travels.iterator();
                 while(it.hasNext()) { //Each travel on the list.
                     Travel element = (Travel) it.next();
-                    if(tokens[0].equals(element.getId())) { //If tavel matches to the read id.
+                    if(tokens[0].equals(element.getId())) { //If travel matches to the read id.
                         for(int k = 1; k < tokens.length; k++) { //Each element on the line.
                             String[] elements = tokens[k].split("-");
                             try {
@@ -363,7 +372,9 @@ public class SalesDesk {
                 line = bufferedReader.readLine();
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            JOptionPane.showMessageDialog(null,
+                    location.getLabel(location.ERROR_READING_STATUS),
+                    "", JOptionPane.ERROR_MESSAGE);
         }
     }
 

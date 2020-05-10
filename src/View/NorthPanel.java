@@ -25,7 +25,7 @@ public class NorthPanel extends JPanel {
     private MainFrame mainFrame;
     private JLabel travelsLabel;
     private JComboBox travelsComboBox;
-    private Location local;
+    private Location location;
 
 
     /**
@@ -33,9 +33,9 @@ public class NorthPanel extends JPanel {
      *
      * @param mainFrame MainFrame
      */
-    public NorthPanel(MainFrame mainFrame, Location local) {
+    public NorthPanel(MainFrame mainFrame, Location location) {
         this.mainFrame = mainFrame;
-        this.local = local;
+        this.location = location;
         this.setLayout(new GridLayout(1, 3, 5, 5));
         buildPanel();
     }
@@ -45,7 +45,7 @@ public class NorthPanel extends JPanel {
      * Builds the panel.
      */
     private void buildPanel() {
-        travelsLabel = new JLabel(local.getLabel(local.ROUTES) + COLON, SwingConstants.RIGHT);
+        travelsLabel = new JLabel(location.getLabel(location.ROUTES) + COLON, SwingConstants.RIGHT);
         travelsComboBox = new JComboBox();
 
         this.add(travelsLabel);

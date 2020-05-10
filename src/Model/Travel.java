@@ -279,10 +279,16 @@ public class Travel {
     /**
      * Removes the asignated pasenger of the received seat.
      * @param seat Integer
+     * @return boolean
      */
-    public void deallocateSeat(int seat){
+    public boolean deallocateSeat(int seat){
         seats[seat] = null;
-        observers.firePropertyChange("SEAT_CHANGE", null, null);
+        if(seats[seat] == null) {
+            observers.firePropertyChange("SEAT_CHANGE", null, null);
+            return true;
+        } else {
+            return false;
+        }
     }
 
 

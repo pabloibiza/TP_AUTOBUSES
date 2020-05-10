@@ -19,7 +19,7 @@ import java.awt.event.ActionListener;
 public class SouthPanel extends JPanel {
     private MainFrame mainFrame;
     private ViewListener viewListener;
-    private Location local;
+    private Location location;
     private JButton assignButton;
     private JButton deallocateButton;
     private JButton routeSheetButton;
@@ -29,10 +29,10 @@ public class SouthPanel extends JPanel {
      * Construtor method.
      * @param mainFrame MainFrame
      */
-    public SouthPanel(MainFrame mainFrame, ViewListener viewListener, Location local) {
+    public SouthPanel(MainFrame mainFrame, ViewListener viewListener, Location location) {
         this.mainFrame = mainFrame;
         this.viewListener = viewListener;
-        this.local = local;
+        this.location = location;
         this.setLayout(new FlowLayout());
         buildPanel();
     }
@@ -41,9 +41,9 @@ public class SouthPanel extends JPanel {
      * Builds the panel.
      */
     private void buildPanel(){
-        assignButton = new JButton(local.getLabel(local.ASSIGN));
-        deallocateButton = new JButton(local.getLabel(local.DEALLOCATE));
-        routeSheetButton = new JButton(local.getLabel(local.GENERATE_ROUTE_SHEET));
+        assignButton = new JButton(location.getLabel(location.ASSIGN));
+        deallocateButton = new JButton(location.getLabel(location.DEALLOCATE));
+        routeSheetButton = new JButton(location.getLabel(location.GENERATE_ROUTE_SHEET));
         this.add(assignButton);
         this.add(routeSheetButton);
 
@@ -57,7 +57,13 @@ public class SouthPanel extends JPanel {
         deallocateButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                mainFrame.deallocateSeat();
+                int option = JOptionPane.showConfirmDialog(mainFrame,
+                        location.getLabel(location.SURE_DEALLOCATE),
+                        "",
+                        JOptionPane.YES_NO_OPTION);
+                if(option == 0) { // Selected: YES
+                    mainFrame.deallocateSeat();
+                }
             }
         });
 

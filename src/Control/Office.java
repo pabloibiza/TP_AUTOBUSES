@@ -14,7 +14,6 @@ import Model.SalesDesk;
 import Model.Travel;
 import View.Location;
 import View.MainFrame;
-
 import javax.swing.*;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -22,16 +21,14 @@ import java.util.Locale;
 import java.util.MissingResourceException;
 import java.util.Properties;
 
-import static java.lang.Thread.sleep;
-
 
 public class Office implements ViewListener {
-    private static final String PASSENGERS_FILE_PATH = "src/storage/data/passengers.csv";
-    private static final String TRAVELS_FILE_PATH = "src/storage/data/travels.csv";
-    private static final String TRAVELS_STATUS_FILE_PATH = "src/storage/data/status.csv";
-    private static final String CONFIG_FILE_PATH  = "src/storage/conf/config.properties";
-    public static final String LANGUAGE_PARAMETER = "language";
-    public static final String COUNTRY_PARAMETER = "country";
+    private static final String PASSENGERS_FILE_PATH = "storage/data/passengers.csv";
+    private static final String TRAVELS_FILE_PATH = "storage/data/travels.csv";
+    private static final String TRAVELS_STATUS_FILE_PATH = "storage/data/status.csv";
+    private static final String CONFIG_FILE_PATH  = "storage/conf/config.properties";
+    private static final String LANGUAGE_PARAMETER = "language";
+    private static final String COUNTRY_PARAMETER = "country";
     private static final String INSTANCE_ALREADY_CREATED="Is not possible to create more than one instance of ";
     private static final String ERROR_CONFIGS = "Error loading configuration";
     private static final String LANGUAGE_FILE_NOT_FOUND = "The selected language file was not found";
@@ -55,11 +52,13 @@ public class Office implements ViewListener {
         try {
             location = Location.getSingletonInstance(language, country);
         } catch (MissingResourceException e) {
-            JOptionPane.showMessageDialog( new JFrame(),LANGUAGE_FILE_NOT_FOUND, "",JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog( null,
+                    LANGUAGE_FILE_NOT_FOUND, "",JOptionPane.ERROR_MESSAGE);
             System.exit(1);
         }
 
-        salesDesk = SalesDesk.getSingletonInstance(location, PASSENGERS_FILE_PATH, TRAVELS_FILE_PATH, TRAVELS_STATUS_FILE_PATH);
+        salesDesk = SalesDesk.getSingletonInstance(location,
+                PASSENGERS_FILE_PATH, TRAVELS_FILE_PATH, TRAVELS_STATUS_FILE_PATH);
         mainFrame = MainFrame.getSingletonInstance(this, salesDesk, location);
         salesDesk.setTravelsObserver(mainFrame);
     }
@@ -115,21 +114,9 @@ public class Office implements ViewListener {
 
 
     /**
-     * Saves applications's data and exit.
+     * Exit.
      */
     private void exit() {
-        try {
-            salesDesk.savePassengers(PASSENGERS_FILE_PATH);
-        } catch (IOException e) {
-            mainFrame.errorMessage("Error while saving changes to passengers file", e);
-        }
-
-        try {
-            salesDesk.saveTravelsStatus(TRAVELS_STATUS_FILE_PATH);
-        } catch (IOException e) {
-            mainFrame.errorMessage("Error while saving changes to travels status file", e);
-        }
-
         System.exit(0);
     }
 
@@ -183,7 +170,10 @@ public class Office implements ViewListener {
         Travel travel = (Travel) assignationData[0];
         Passenger passenger = (Passenger) assignationData[1];
         int seat = (Integer) assignationData[2];
-        salesDesk.assignSeat(travel, passenger, seat);
+        if(salesDesk.assignSeat(travel, passenger, seat)){
+            mainFrame.infoMessage(location.getLabel(location.SEAT_ASSIGN_SUCCESS));
+        } else
+            mainFrame.errorMessage(location.getLabel(location.SEAT_ASSIGN_ERROR), null);
         try {
             salesDesk.saveTravelsStatus(TRAVELS_STATUS_FILE_PATH);
         } catch (IOException e) {
@@ -199,7 +189,11 @@ public class Office implements ViewListener {
     private void unassignSeat(Object[] unassignationData) {
         Travel travel = (Travel) unassignationData[0];
         int seat = (Integer) unassignationData[1];
-        salesDesk.deallocateSeat(travel, seat);
+        if(salesDesk.deallocateSeat(travel, seat)){
+            mainFrame.infoMessage(location.getLabel(location.SEAT_DEALLOCATION_SUCCESS));
+        } else {
+            mainFrame.errorMessage(location.getLabel(location.SEAT_DEALLOCATION_ERROR), null);
+        }
         try {
             salesDesk.saveTravelsStatus(TRAVELS_STATUS_FILE_PATH);
         } catch (IOException e) {
@@ -241,4 +235,14 @@ public class Office implements ViewListener {
                 break;
         }
     }
+
+    /**
+     * Main method.
+     * @param args
+     */
+    public static void main(String[] args) {
+        Office office = Office.getSingletonInstance();
+    }
 }
+
+

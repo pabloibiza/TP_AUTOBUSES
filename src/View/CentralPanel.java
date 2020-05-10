@@ -31,27 +31,27 @@ public class CentralPanel extends JPanel {
 
     private MainFrame mainFrame;
     private SalesDesk salesDesk;
-    private Box boxes[][];
+    private SeatBox seatBoxes[][];
     private JPanel matrix;
     private JPanel infoPanel;
     private JLabel info;
     private BufferedImage image;
-    private Location local;
+    private Location location;
 
 
     /**
      * Constructor method.
      * @param mainFrame MainFrame
      */
-    public CentralPanel (MainFrame mainFrame, SalesDesk salesDesk, Location local) {
+    public CentralPanel (MainFrame mainFrame, SalesDesk salesDesk, Location location) {
         this.mainFrame = mainFrame;
         this.salesDesk = salesDesk;
-        this.local = local;
+        this.location = location;
         this.setLayout(new BorderLayout(5,5));
         try {
             image = ImageIO.read(new File(BACKGROUND_IMAGE_PATH));
         } catch (IOException ex) {
-            mainFrame.errorMessage(local.getLabel(local.ERROR_BACKGROUND_NOT_FOUND), ex);
+            mainFrame.errorMessage(location.getLabel(location.ERROR_BACKGROUND_NOT_FOUND), ex);
         }
 
         matrix = new JPanel();
@@ -61,7 +61,7 @@ public class CentralPanel extends JPanel {
         info = new JLabel();
         infoPanel.add(info);
         infoPanel.setPreferredSize(new Dimension(INFO_PANEL_WIDTH,INFO_PANEL_HEIGHT));
-        infoPanel.setBorder(BorderFactory.createTitledBorder(local.getLabel(local.INFO_PANEL_TITTLE)));
+        infoPanel.setBorder(BorderFactory.createTitledBorder(location.getLabel(location.INFO_PANEL_TITTLE)));
 
         this.add(matrix, BorderLayout.CENTER);
         this.add(infoPanel, BorderLayout.EAST);
@@ -90,19 +90,19 @@ public class CentralPanel extends JPanel {
     private void buildMatrix(int rows, int cols, Travel travel) {
         int seatsIndex = 1;
         int corridorColumn = (((cols - CORRIDOR_GAPS) / 2) + ((cols - CORRIDOR_GAPS) % 2));
-        boxes = new Box[rows][cols];
+        seatBoxes = new SeatBox[rows][cols];
 
         for(int row = 0; row < rows; row++) {
             for (int col = 0; col < cols; col++) {
                 if (col == corridorColumn && row != (rows - 1)) { //Corridor
-                    boxes[row][col] = new Box();
+                    seatBoxes[row][col] = new SeatBox();
                 } else if((row == (rows/2)) && (col > corridorColumn) && rows > MINUM_SIZE_BACK_DOOR) { //Back door
-                    boxes[row][col] = new Box();
+                    seatBoxes[row][col] = new SeatBox();
                 } else { //Seats
-                    boxes[row][col] = new Box(mainFrame, seatsIndex, salesDesk.searchPassenger(travel.whoIsSited(seatsIndex)));
+                    seatBoxes[row][col] = new SeatBox(mainFrame, seatsIndex, salesDesk.searchPassenger(travel.whoIsSited(seatsIndex)));
                     seatsIndex++;
                 }
-                matrix.add(boxes[row][col]);
+                matrix.add(seatBoxes[row][col]);
             }
         }
     }

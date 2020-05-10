@@ -18,7 +18,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 
-public class Box extends JButton {
+public class SeatBox extends JButton {
     private static final String TEXT_SPACER = " ";
     private static final String ELEMENTS_SEPARATOR = ",";
 
@@ -40,7 +40,7 @@ public class Box extends JButton {
      * @param seatNumber Integer
      * @param passenger Passenger
      */
-    public Box(MainFrame mainFrame, int seatNumber, Passenger passenger) {
+    public SeatBox(MainFrame mainFrame, int seatNumber, Passenger passenger) {
         this.mainFrame = mainFrame;
         this.seatNumber = seatNumber;
         this.passenger = passenger;
@@ -61,7 +61,7 @@ public class Box extends JButton {
             @Override
             public void actionPerformed(ActionEvent e) {
                 if(!selected) {
-                    mainFrame.setSelectedSeat(Box.this);
+                    mainFrame.setSelectedSeat(SeatBox.this);
                     select();
                 } else {
                     mainFrame.setSelectedSeat(null);
@@ -75,7 +75,7 @@ public class Box extends JButton {
     /**
      * Constructor method for an empty and invisible Box.
      */
-    public Box () {
+    public SeatBox() {
         this.setEnabled(false);
         this.setVisible(false);
     }
@@ -133,7 +133,11 @@ public class Box extends JButton {
      */
     public void select(){
         selected = true;
-        setBackground(Color.YELLOW);
+        if(inUse) {
+            setBackground(Color.ORANGE);
+        } else {
+            setBackground(Color.GREEN);
+        }
         setOpaque(true);
         setBorderPainted(true);
     }

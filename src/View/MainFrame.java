@@ -35,28 +35,28 @@ public class MainFrame extends JFrame implements PropertyChangeListener{
     private CentralPanel centralPanel;
     private GregorianCalendar selectedDate;
     private String selectedTravel = "";
-    private Box selectedSeat;
+    private SeatBox selectedSeat;
     private Location local;
 
-    private MainFrame(ViewListener viewListener, SalesDesk salesDesk, Location local){
+    private MainFrame(ViewListener viewListener, SalesDesk salesDesk, Location location){
         super();
         this.viewListener = viewListener;
         this.salesDesk = salesDesk;
-        this.local = local;
+        this.local = location;
         configureWindow();
 
-        westPanel = new WestPanel(this, viewListener, local);
+        westPanel = new WestPanel(this, viewListener, location);
         this.add(westPanel, BorderLayout.WEST);
 
-        northPanel = new NorthPanel(this, local);
+        northPanel = new NorthPanel(this, location);
         this.add(northPanel, BorderLayout.NORTH);
 
-        southPanel = new SouthPanel(this, viewListener, local);
+        southPanel = new SouthPanel(this, viewListener, location);
         this.add(southPanel, BorderLayout.SOUTH);
         southPanel.stateRouteSheetButton(false);
         southPanel.stateAssignDeallocateButtons(false);
 
-        centralPanel = new CentralPanel(this, salesDesk, local);
+        centralPanel = new CentralPanel(this, salesDesk, location);
         this.add(centralPanel, BorderLayout.CENTER);
 
         setVisible(true);
@@ -220,7 +220,7 @@ public class MainFrame extends JFrame implements PropertyChangeListener{
      * Sets the selected seat.
      * @param newSeat Integer
      */
-    public void setSelectedSeat(Box newSeat) {
+    public void setSelectedSeat(SeatBox newSeat) {
         if (selectedSeat != null || newSeat == null) {
             selectedSeat.unselect();
             southPanel.stateAssignDeallocateButtons(false);
@@ -242,7 +242,7 @@ public class MainFrame extends JFrame implements PropertyChangeListener{
      * Returns the selected seat.
      * @return Integer
      */
-    public Box getSelectedSeat() {
+    public SeatBox getSelectedSeat() {
         return selectedSeat;
     }
 
@@ -327,7 +327,7 @@ public class MainFrame extends JFrame implements PropertyChangeListener{
 
 
     /**
-     * Receives evetns and perform different actions depending on the event.
+     * Receives events and perform different actions depending on the event.
      * @param event PropertyChangeEvent
      */
     @Override

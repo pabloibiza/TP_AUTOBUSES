@@ -8,8 +8,7 @@ import java.util.ResourceBundle;
 public class Location {
     private static Location location = null;
     private ResourceBundle resources;
-    private static final String LANGUAGE_FILE_NOT_FOUND = "The selected language file was not found";
-    private static final String LANGUAGE_FILES_PATH = "storage/lan/";
+    private static final String LANGUAGE_FILES_PATH = "Control/lang/";
     private static final String LANGUAGE_FILES_HEADER = "Labels_";
 
     public static final String ERROR_BACKGROUND_NOT_FOUND = "ERROR_BACKGROUND_NOT_FOUND";
@@ -43,8 +42,14 @@ public class Location {
     public static final String SEATS_PLAN = "SEATS_PLAN";
     public static final String SEAT = "SEAT";
     public static final String SHEET_NAME_TEXT = "SHEET_NAME_TEXT";
-    public static final String TRAVELS_READ_ERROR = "TRAVELS_READ_ERROR";
     public static final String SEAT_ASSIGN_ERROR = "SEAT_ASSIGN_ERROR";
+    public static final String SEAT_ASSIGN_SUCCESS = "SEAT_ASSIGN_SUCCESS";
+    public static final String SURE_DEALLOCATE = "SURE_DEALLOCATE";
+    public static final String SEAT_DEALLOCATION_SUCCESS = "SEAT_DEALLOCATION_SUCCESS";
+    public static final String SEAT_DEALLOCATION_ERROR = "SEAT_DEALLOCATION_ERROR";
+    public static final String ERROR_READING_PASSENGERS = "ERROR_READING_PASSENGERS";
+    public static final String ERROR_READING_TRAVELS = "ERROR_READING_TRAVELS";
+    public static final String ERROR_READING_STATUS = "ERROR_READING_STATUS";
 
     String[] systemLabels = {
             "OptionPane.cancelButtonText",
