@@ -3,13 +3,15 @@
  *
  * View.WestPanel.java
  *
- * @version 4.4
+ * @version 2.0
  * @author Pablo Sanz Alguacil
  */
 
 package View;
 
 import Control.ViewListener;
+import Internationalization.Location;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -42,6 +44,8 @@ public class WestPanel extends JPanel {
     /**
      * Constructor method.
      * @param mainframe MainFrame
+     * @param viewListener ViewListener
+     * @param location Location
      */
     public WestPanel(MainFrame mainframe, ViewListener viewListener, Location location){
         this.mainFrame = mainframe;
@@ -69,7 +73,7 @@ public class WestPanel extends JPanel {
         actualDate = new GregorianCalendar();
         actualYear = actualDate.get(GregorianCalendar.YEAR);
         actualMonth = actualDate.get(GregorianCalendar.MONTH);
-        dateLabel = new JLabel(location.getLabel(location.DATE_LABEL) + COLON, SwingConstants.CENTER);
+        dateLabel = new JLabel(location.getLabel(location.DATE_LABEL), SwingConstants.CENTER);
 
         //Adds elements to the panel.
         this.add(dateLabel);
@@ -92,7 +96,7 @@ public class WestPanel extends JPanel {
         yearComboBox.setSelectedItem(String.valueOf(actualYear));
 
         //Adds months to the month combo box.
-        for(int i = 0; i < 11; i++){
+        for(int i = 0; i < 12; i++){
             monthComboBox.addItem(String.valueOf(location.getLabel(location.MONTHS[i])));
         }
         monthComboBox.setSelectedIndex(actualMonth);

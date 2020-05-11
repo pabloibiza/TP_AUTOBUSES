@@ -3,13 +3,14 @@
  *
  * View.MainFrame.java
  *
- * @version 4.4
+ * @version 2.0
  * @author Pablo Sanz Alguacil
  */
 
 package View;
 
 import Control.ViewListener;
+import Internationalization.Location;
 import Model.Passenger;
 import Model.SalesDesk;
 
@@ -21,6 +22,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.GregorianCalendar;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 public class MainFrame extends JFrame implements PropertyChangeListener{
     private static final String COLON = ": ";
@@ -36,13 +38,13 @@ public class MainFrame extends JFrame implements PropertyChangeListener{
     private GregorianCalendar selectedDate;
     private String selectedTravel = "";
     private SeatBox selectedSeat;
-    private Location local;
+    private Location location;
 
     private MainFrame(ViewListener viewListener, SalesDesk salesDesk, Location location){
         super();
         this.viewListener = viewListener;
         this.salesDesk = salesDesk;
-        this.local = location;
+        this.location = location;
         configureWindow();
 
         westPanel = new WestPanel(this, viewListener, location);
@@ -69,12 +71,14 @@ public class MainFrame extends JFrame implements PropertyChangeListener{
      * @param salesDesk SalesDesk
      * @return Mainframe
      */
-    public static synchronized MainFrame getSingletonInstance(ViewListener viewListener, SalesDesk salesDesk, Location local) {
+    public static synchronized MainFrame getSingletonInstance(ViewListener viewListener, SalesDesk salesDesk,
+                                                              Location local) {
         if (mainFrame == null){
             mainFrame = new MainFrame(viewListener, salesDesk, local);
         }
         else{
-            mainFrame.errorMessage(local.getLabel(local.INSTANCE_ALREADY_CREATED) + mainFrame.getClass().getSimpleName(), null);
+            mainFrame.errorMessage(local.getLabel(
+                    local.INSTANCE_ALREADY_CREATED) + mainFrame.getClass().getSimpleName(), null);
         }
         return mainFrame;
     }
@@ -94,10 +98,11 @@ public class MainFrame extends JFrame implements PropertyChangeListener{
      * Sets the window parameters.
      */
     private void configureWindow() {
-        this.setTitle(local.getLabel(local.WINDOW_TITLE));
-        this.setSize(900, 500);
+        this.setTitle(location.getLabel(location.WINDOW_TITLE));
+        this.setSize(920, 520);
         this.setLocationRelativeTo(null);
         this.setLayout(new BorderLayout(5,5));
+        getRootPane().setBorder(BorderFactory.createEmptyBorder(10,10, 10, 10));
         this.setResizable(false);
 
         addWindowListener(new WindowAdapter() {
@@ -149,7 +154,7 @@ public class MainFrame extends JFrame implements PropertyChangeListener{
             southPanel.stateRouteSheetButton(false);
         } else if(isOutOfDate()){
             southPanel.stateRouteSheetButton(true);
-            infoMessage(local.getLabel(local.TRAVEL_OUT_OF_DATE));
+            infoMessage(location.getLabel(location.TRAVEL_OUT_OF_DATE));
         } else {
             southPanel.stateRouteSheetButton(true);
         }
@@ -171,7 +176,7 @@ public class MainFrame extends JFrame implements PropertyChangeListener{
     public void receivedListEmpty(){
         southPanel.stateRouteSheetButton(false);
         southPanel.stateAssignDeallocateButtons(false);
-        infoMessage(local.getLabel(local.NO_TRAVELS));
+        infoMessage(location.getLabel(location.NO_TRAVELS));
     }
 
 
@@ -182,7 +187,7 @@ public class MainFrame extends JFrame implements PropertyChangeListener{
     public void infoMessage(String message){
         JOptionPane.showMessageDialog(this,
                 message,
-                local.getLabel(local.INFO_WINDOW_TITLE),
+                location.getLabel(location.INFO_WINDOW_TITLE),
                 JOptionPane.INFORMATION_MESSAGE);
     }
 
@@ -194,7 +199,7 @@ public class MainFrame extends JFrame implements PropertyChangeListener{
     public void errorMessage(String message, Exception e){
         JOptionPane.showMessageDialog(this,
                 message,
-                local.getLabel(local.ERROR_WINDOW_TITLE),
+                location.getLabel(location.ERROR_WINDOW_TITLE),
                 JOptionPane.ERROR_MESSAGE);
     }
 
@@ -307,23 +312,28 @@ public class MainFrame extends JFrame implements PropertyChangeListener{
         Passenger passenger;
         for (int i = 0; i < 3; i++) {
             dialogInput = JOptionPane.showInputDialog(this,
-                    local.getLabel(local.NEW_PASSENGER_QUESTIONS[i]) + COLON,
-                    local.getLabel(local.NEW_PASSENGER_WINDOW_TITTLE),
+                    location.getLabel(location.NEW_PASSENGER_QUESTIONS[i]) + COLON,
+                    location.getLabel(location.NEW_PASSENGER_WINDOW_TITTLE),
                     JOptionPane.QUESTION_MESSAGE);
             if(dialogInput == null){
+                return null;
+            } else if(dialogInput.equals("")){
+                infoMessage(location.getLabel(location.FILL_ALL_GAPS));
                 return null;
             }
             data.append(dialogInput + ELEMENTS_SEPARATOR);
         }
+
         try{
             passenger = new Passenger(data.toString());
             return passenger;
-        } catch (ArrayIndexOutOfBoundsException e) {
-            infoMessage(local.getLabel(local.FILL_ALL_GAPS));
+        } catch (NoSuchElementException e) {
+            infoMessage(location.getLabel(location.FILL_ALL_GAPS));
         }
         return null;
 
     }
+
 
 
     /**

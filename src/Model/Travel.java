@@ -3,7 +3,7 @@
  *
  * Model.Travel.java
  *
- * @version 4.4
+ * @version 2.0
  * @author Pablo Sanz Alguacil
  */
 
@@ -12,9 +12,7 @@ package Model;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.PrintWriter;
-import java.util.Calendar;
-import java.util.GregorianCalendar;
-import java.util.Objects;
+import java.util.*;
 
 public class Travel {
     private String id;
@@ -22,7 +20,7 @@ public class Travel {
     private String destiny;
     private GregorianCalendar date;
     private int seatsNumber;
-    private Pair[] seats;
+    private String[] seats;
     private String seatsDistribution;
     private String info;
     private PropertyChangeSupport observers;
@@ -51,7 +49,7 @@ public class Travel {
 
         String[] distribution = seatsDistribution.split(DISTRIBUTION_SEPARATOR);
         seatsNumber = (Integer.parseInt(distribution[0]) * Integer.parseInt(distribution[1])) + 1;
-        seats = new Pair[seatsNumber + 1];
+        seats = new String[seatsNumber + 1];
     }
 
     /**
@@ -59,34 +57,23 @@ public class Travel {
      * data separated by ";" for each element.
      * @param line String
      */
-    public Travel(String line) {
-        String[] tokens = line.split(ELEMENTS_SEPARATOR);
-        id = tokens[0];
-        origin = tokens[1];
-        destiny = tokens[2];
-        date = readGregorianCalendar(line);
-        seatsDistribution = tokens[8];
-        info = tokens[9];
+    public Travel(String line) throws NoSuchElementException {
+        Scanner scanner = new Scanner(line).useDelimiter(ELEMENTS_SEPARATOR);
+        id = scanner.next();
+        origin = scanner.next();
+        destiny = scanner.next();
+        date = new GregorianCalendar(scanner.nextInt(),
+                scanner.nextInt(),
+                scanner.nextInt(),
+                scanner.nextInt(),
+                scanner.nextInt());
+        seatsDistribution = scanner.next();
+        info = scanner.next();
         observers = new PropertyChangeSupport(this);
 
-        String[] distribution = seatsDistribution.split(DISTRIBUTION_SEPARATOR);
-        seatsNumber = Integer.parseInt(distribution[0]) * Integer.parseInt(distribution[1]) + 1;
-        seats = new Pair[seatsNumber + 1];
-    }
-
-    /**
-     * Returns a GregorianCalendar (year/month/day hh:mm) created from the received String.
-     * @param line String
-     * @return GregorianCalendar
-     */
-    private GregorianCalendar readGregorianCalendar(String line) {
-        String[] tokens = line.split(ELEMENTS_SEPARATOR);
-        return new GregorianCalendar(
-                Integer.parseInt(tokens[3]),
-                Integer.parseInt(tokens[4]),
-                Integer.parseInt(tokens[5]),
-                Integer.parseInt(tokens[6]),
-                Integer.parseInt(tokens[7]));
+        Scanner distribution = new Scanner(seatsDistribution).useDelimiter(DISTRIBUTION_SEPARATOR);
+        seatsNumber = (distribution.nextInt() * distribution.nextInt()) + 1;
+        seats = new String[seatsNumber + 1];
     }
 
 
@@ -118,59 +105,13 @@ public class Travel {
 
 
     /**
-     * Returns the day.
-     * @return Integer
+     * Returns the date
+     * @return GregorianCalendar
      */
-    public int getDay(){
-        return date.get(Calendar.DAY_OF_MONTH);
+    public GregorianCalendar getDate(){
+        return date;
     }
 
-
-    /**
-     * Returns the month.
-     * @return Integer
-     */
-    public int getMonth(){
-        return date.get(Calendar.MONTH);
-    }
-
-
-    /**
-     * Returns the year.
-     * @return Integer
-     */
-    public int getYear(){
-        return date.get(Calendar.YEAR);
-    }
-
-    /**
-     * Returns the hour.
-     * @return Integer
-     */
-    public Integer getHour(){
-        return date.get(Calendar.HOUR_OF_DAY);
-    }
-
-    /**
-     * Returns the minutes.
-     * @return Integer
-     */
-    public Integer getMinute(){
-        return date.get(Calendar.MINUTE);
-    }
-
-
-    /**
-     * Returns the date ready to print on the screen.
-     * @return String
-     */
-    public String getDateToPrint(){
-        return date.get(GregorianCalendar.DAY_OF_MONTH) + "/" +
-                String.valueOf(Integer.parseInt(String.valueOf(date.get(GregorianCalendar.MONTH) + 1))) + "/" +
-                date.get(GregorianCalendar.YEAR) + "  " +
-                date.get(GregorianCalendar.HOUR_OF_DAY)+ ":" +
-                date.get(GregorianCalendar.MINUTE);
-    }
 
     /**
      * Returns the seats distribution (sits per row * rows)
@@ -253,7 +194,7 @@ public class Travel {
         line.append(id).append(ELEMENTS_SEPARATOR);
         for(int i = 1; i < seats.length; i++){
             if(seats[i] != null) {
-                line.append(seats[i].getSeat()).append(DNI_SEAT_SEPARATOR).append(seats[i].getPassengerID()).append(ELEMENTS_SEPARATOR);
+                line.append(i).append(DNI_SEAT_SEPARATOR).append(seats[i]).append(ELEMENTS_SEPARATOR);
             }
         }
         printWriter.println(line);
@@ -268,7 +209,7 @@ public class Travel {
      */
     public boolean assignSeat(int seat, String passengerID){
             if(seats[seat] == null){
-                seats[seat] = new Pair<>(seat, passengerID);
+                seats[seat] = passengerID;
                 observers.firePropertyChange("SEAT_CHANGE", null, null);
                 return true;
             }
@@ -314,7 +255,7 @@ public class Travel {
     public String whoIsSited(int seat) throws NullPointerException{
         String passengerID;
         if(!isSeatFree(seat)){
-            passengerID = seats[seat].getPassengerID();
+            passengerID = seats[seat];
         }else{
             return null;
         }

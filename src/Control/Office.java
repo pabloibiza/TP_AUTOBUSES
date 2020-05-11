@@ -3,7 +3,7 @@
  *
  * Control.Office.java
  *
- * @version 4.4
+ * @version 2.0
  * @author Pablo Sanz Alguacil
  */
 
@@ -12,7 +12,7 @@ package Control;
 import Model.Passenger;
 import Model.SalesDesk;
 import Model.Travel;
-import View.Location;
+import Internationalization.Location;
 import View.MainFrame;
 import javax.swing.*;
 import java.io.FileInputStream;

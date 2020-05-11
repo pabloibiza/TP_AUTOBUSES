@@ -1,7 +1,7 @@
 /*
  * Model.SalesDesk.java
  *
- * @version 4.4
+ * @version 2.0
  * @author Pablo Sanz Alguacil
  */
 

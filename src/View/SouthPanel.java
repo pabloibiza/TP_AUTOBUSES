@@ -3,13 +3,15 @@
  *
  * View.SouthPanel.java
  *
- * @version 4.4
+ * @version 2.0
  * @author Pablo Sanz Alguacil
  */
 
 package View;
 
 import Control.ViewListener;
+import Internationalization.Location;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -28,6 +30,8 @@ public class SouthPanel extends JPanel {
     /**
      * Construtor method.
      * @param mainFrame MainFrame
+     * @param viewListener ViewListaner
+     * @param location Location
      */
     public SouthPanel(MainFrame mainFrame, ViewListener viewListener, Location location) {
         this.mainFrame = mainFrame;

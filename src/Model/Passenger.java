@@ -3,14 +3,16 @@
  *
  * Model.Passenger.java
  *
- * @version 4.4
+ * @version 2.0
  * @author Pablo Sanz Alguacil
  */
 
 package Model;
 
 import java.io.PrintWriter;
+import java.util.NoSuchElementException;
 import java.util.Objects;
+import java.util.Scanner;
 
 public class Passenger {
     private String dni;
@@ -38,20 +40,38 @@ public class Passenger {
      * separated by ";" for each element.
      * @param line String
      */
-    public Passenger(String line) {
-        String[] elements = line.split(ELEMENTS_SEPARATOR);
-        this.dni = elements[0];
-        this.name = elements[1];
-        this.surname = elements[2];
+    public Passenger(String line) throws NoSuchElementException{
+        Scanner scanner = new Scanner(line).useDelimiter(ELEMENTS_SEPARATOR);
+        this.dni = scanner.next();
+        this.name = scanner.next();
+        this.surname = scanner.next();
     }
 
 
     /**
-     * Returns the DNI of the passenger.
+     * Returns the DNI.
      * @return Integer
      */
     public String getDni(){
         return dni;
+    }
+
+
+    /**
+     * Returns the name.
+     * @return
+     */
+    public String getName(){
+        return name;
+    }
+
+
+    /**
+     * Returns the surname.
+     * @return
+     */
+    public String getSurname(){
+        return surname;
     }
 
 

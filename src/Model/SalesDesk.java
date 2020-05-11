@@ -3,13 +3,13 @@
  *
  * Model.SalesDesk.java
  *
- * @version 4.4
+ * @version 2.0
  * @author Pablo Sanz Alguacil
  */
 
 package Model;
 
-import View.Location;
+import Internationalization.Location;
 
 import javax.swing.*;
 import java.beans.PropertyChangeListener;
@@ -25,7 +25,10 @@ public class SalesDesk {
     private static final String ELEMENTS_SEPARATOR = ",";
     private static final String DISTRIBUTION_SEPARATOR = "x";
     private static final String COLON = ": ";
+    private static final String TEXT_SPACER = " ";
+    private static final String SLASH = "/";
     private static final String ROUTE_SHEET_FILE_ESXTENSION = ".txt";
+    private static final String DNI_SEAT_SEPARATOR = "-";
     private static final String INSTANCE_ALREADY_CREATED = "Is not possible to create more than one instance of ";
     private static final String[] COLUMNS_DESIGNATION = {"A", "B", "C", "D", "E", "F"};
     private static final int MINUM_SIZE_BACK_DOOR = 7;
@@ -54,7 +57,8 @@ public class SalesDesk {
      * @param travelsStatusFile String
      * @return SalesDesk
      */
-    public static synchronized SalesDesk getSingletonInstance(Location location, String passengersFile, String travelsFile, String travelsStatusFile) {
+    public static synchronized SalesDesk getSingletonInstance(Location location, String passengersFile,
+                                                              String travelsFile, String travelsStatusFile) {
         if (salesDesk == null){
             salesDesk = new SalesDesk(location, passengersFile, travelsFile, travelsStatusFile);
         }
@@ -84,20 +88,6 @@ public class SalesDesk {
     public boolean addPassenger (Passenger passenger) {
         if(searchPassenger(passenger.getDni()) == null) {
             passengers.add(passenger);
-            return true;
-        }
-        return false;
-    }
-
-
-    /**
-     * Adds a new travel. Returns true in case of success.
-     * @param travel Model.Travel
-     * @return boolean
-     */
-    public boolean addTravel (Travel travel) {
-        if(searchTravel(travel.getId()) == null) {
-            travels.add(travel);
             return true;
         }
         return false;
@@ -170,7 +160,7 @@ public class SalesDesk {
      * @return boolean
      */
     public boolean deallocateSeat(Travel travel, int seat){
-        if (travel.isSeatFree(seat)){
+        if (!travel.isSeatFree(seat)){
             return travel.deallocateSeat(seat);
         }
         return false;
@@ -197,16 +187,36 @@ public class SalesDesk {
      */
     public void generateTravelSheet(Travel travel) {
         StringBuilder plan = new StringBuilder();
-        plan.append(location.getLabel(location.ORIGIN)).append(COLON).append(travel.getOrigin()).append("\n");
-        plan.append(location.getLabel(location.DESTINY)).append(COLON).append(travel.getDestiny()).append("\n");
-        plan.append(location.getLabel(location.DATE)).append(COLON).append(travel.getDateToPrint()).append("\n");
-        plan.append(location.getLabel(location.SEATS_PLAN)).append(COLON).append(travel.getSeatsDistribution()).append("\n\n");
+        GregorianCalendar date = travel.getDate();
+
+        plan.append(location.getLabel(location.ORIGIN))
+                .append(COLON)
+                .append(travel.getOrigin())
+                .append("\n");
+        plan.append(location.getLabel(location.DESTINY))
+                .append(COLON)
+                .append(travel.getDestiny())
+                .append("\n");
+        plan.append(location.getLabel(location.DATE))
+                .append(COLON)
+                .append(String.format("%02d",date.get(GregorianCalendar.DAY_OF_MONTH))).append(SLASH)
+                .append(String.format("%02d",date.get(GregorianCalendar.MONTH) + 1)).append(SLASH)
+                .append(String.format("%02d",date.get(GregorianCalendar.YEAR))).append(TEXT_SPACER)
+                .append(String.format("%02d",date.get(GregorianCalendar.HOUR_OF_DAY))).append(COLON)
+                .append(String.format("%02d",date.get(GregorianCalendar.MINUTE)))
+                .append("\n");
+        plan.append(location.getLabel(location.SEATS_PLAN))
+                .append(COLON)
+                .append(travel.getSeatsDistribution())
+                .append("\n\n");
+
         plan.append(seatsStatus(travel));
         plan.append("\n\n");
 
         for(int i = 0; i < travel.getSeatsNumber(); i++) {
             if(!travel.isSeatFree(i)) {
-                plan.append(location.getLabel(location.SEAT)).append(i).append(COLON).append(whoIsSited(travel, i)).append("\n");
+                plan.append(location.getLabel(location.SEAT)).append(i).append(COLON)
+                        .append(whoIsSited(travel, i)).append("\n");
             }
         }
 
@@ -235,6 +245,7 @@ public class SalesDesk {
         String corridorGaps = "     ";
         StringBuilder plan = new StringBuilder();
 
+        //Generates the column dessignation (A,B,C...)
         plan.append("_____");
         for(int i = 0; i < cols; i++){
             if (i < corridorColumn) {
@@ -248,6 +259,8 @@ public class SalesDesk {
             }
         }
         plan.append("\n");
+
+        //Generates the seats map.
         for(int row = 0; row < rows; row++) {
             plan.append("_").append(String.format("%02d", row + 1)).append("_").append("| ");
             for (int col = 0; col < cols; col++) {
@@ -293,10 +306,8 @@ public class SalesDesk {
     public void saveTravelsStatus (String fileName) throws IOException {
         PrintWriter file = new PrintWriter( new BufferedWriter( new FileWriter(fileName)));
 
-        Iterator it = travels.iterator();
-        while(it.hasNext()) {
-            Travel element = (Travel) it.next();
-            element.saveTravelStatus(file);
+        for(Travel travel : travels){
+            travel.saveTravelStatus(file);
         }
         file.close();
     }
@@ -307,13 +318,20 @@ public class SalesDesk {
      * @param file String
      */
     public void readPassengers (String file){
-
-        try (BufferedReader bufferedReader = new BufferedReader(new FileReader(file))) {
+        try {
+            BufferedReader bufferedReader = new BufferedReader(new FileReader(file));
             String line = bufferedReader.readLine();
 
-            for (int i = 0; line != null; i++) {
-                passengers.add(new Passenger(line));
+            while(line != null){
+                try{
+                    passengers.add(new Passenger(line));
+                } catch (NoSuchElementException ne) {
+                    JOptionPane.showMessageDialog(null,
+                            location.getLabel(location.ERROR_READING_A_PASSENGER),
+                            "", JOptionPane.ERROR_MESSAGE);
+                }
                 line = bufferedReader.readLine();
+
             }
         } catch (IOException e) {
             JOptionPane.showMessageDialog(null,
@@ -331,8 +349,15 @@ public class SalesDesk {
         try (BufferedReader bufferedReader = new BufferedReader(new FileReader(file))) {
             String line = bufferedReader.readLine();
 
-            for (int i = 0; line != null; i++) {
-                travels.add(new Travel(line));
+            while(line != null) {
+                try {
+                    travels.add(new Travel(line));
+                } catch (NoSuchElementException e) {
+                    JOptionPane.showMessageDialog(null,
+                            location.getLabel(location.ERROR_READING_A_TRAVEL) +
+                                    COLON + line.split(ELEMENTS_SEPARATOR)[0],
+                            "", JOptionPane.ERROR_MESSAGE);
+                }
                 line = bufferedReader.readLine();
             }
         } catch (IOException e) {
@@ -351,30 +376,47 @@ public class SalesDesk {
         try (BufferedReader bufferedReader = new BufferedReader(new FileReader(file))) {
             String line = bufferedReader.readLine();
 
-            for (int i = 0; line != null; i++) { //Each line of the file.
-                String[] tokens =  line.split(ELEMENTS_SEPARATOR);
-                Iterator it = travels.iterator();
-                while(it.hasNext()) { //Each travel on the list.
-                    Travel element = (Travel) it.next();
-                    if(tokens[0].equals(element.getId())) { //If travel matches to the read id.
-                        for(int k = 1; k < tokens.length; k++) { //Each element on the line.
-                            String[] elements = tokens[k].split("-");
-                            try {
-                                if (!element.assignSeat(Integer.parseInt(elements[0]), elements[1])) {
-                                    throw new SeatsReadException(2, null);
-                                }
-                            } catch (NumberFormatException e){
-                                throw new SeatsReadException(1, tokens[k]);
-                            }
-                        }
+            while(line != null) {
+                String readID = line.split(ELEMENTS_SEPARATOR)[0]; //The first element on each line is the ID.
+                for(Travel travel : travels){ //For each travel on the travels Set.
+                    if(readID.equals(travel.getId())) { //Compares the read Id against the actual travel.
+                        loadPassengersIntoTravel(travel, line);
                     }
                 }
-                line = bufferedReader.readLine();
+                line = bufferedReader.readLine(); //Next line
             }
         } catch (IOException e) {
             JOptionPane.showMessageDialog(null,
                     location.getLabel(location.ERROR_READING_STATUS),
                     "", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+
+    /**
+     * Receives a String containing the seats and DNIs and assigns them to a travel.
+     * @param travel Travel
+     * @param line String
+     */
+    public void loadPassengersIntoTravel(Travel travel, String line){
+        String assignation;
+        //Separates each pair of seats and DNIs
+        Scanner elements = new Scanner(line).useDelimiter(ELEMENTS_SEPARATOR);
+        elements.next(); //Skips the id
+
+        while(elements.hasNext()) { //For each pair of seat and DNI.
+            assignation = elements.next();
+            //Separates the seat and the DNI
+            Scanner seatDni = new Scanner(assignation).useDelimiter(DNI_SEAT_SEPARATOR);
+
+            //Assigns the passenger ID to the seat on the received travel.
+            try {
+                if (!travel.assignSeat(seatDni.nextInt(), seatDni.next())) {
+                    throw new SeatsReadException("SEAT", null);
+                }
+            } catch (NumberFormatException e){
+                throw new SeatsReadException("TRAVEL", assignation);
+            }
         }
     }
 
@@ -391,10 +433,9 @@ public class SalesDesk {
         int year = date.get(GregorianCalendar.YEAR);
 
         for (Travel element : travels) {
-            if (element != null &&
-                    element.getDay() == day &&
-                    element.getMonth() == month &&
-                    element.getYear() == year) {
+            if (element.getDate().get(GregorianCalendar.DAY_OF_MONTH) == day
+                    && element.getDate().get(GregorianCalendar.MONTH) == month
+                    && element.getDate().get(GregorianCalendar.YEAR) == year) {
                 foundTravels.add(element);
             }
         }

@@ -1,4 +1,13 @@
-package View;
+/*
+ * Loads a language bundle.
+ *
+ * Internationalization.Location.java
+ *
+ * @version 2.0
+ * @author Pablo Sanz Alguacil
+ */
+
+package Internationalization;
 
 import javax.swing.*;
 import java.util.Locale;
@@ -8,8 +17,9 @@ import java.util.ResourceBundle;
 public class Location {
     private static Location location = null;
     private ResourceBundle resources;
-    private static final String LANGUAGE_FILES_PATH = "Control/lang/";
-    private static final String LANGUAGE_FILES_HEADER = "Labels_";
+    private Locale locale;
+    private static final String LANGUAGE_FILES_PATH = "Internationalization/lang/";
+    private static final String LANGUAGE_FILES_HEADER = "Labels";
 
     public static final String ERROR_BACKGROUND_NOT_FOUND = "ERROR_BACKGROUND_NOT_FOUND";
     public static final String INFO_PANEL_TITTLE = "INFO_PANEL_TITTLE";
@@ -29,7 +39,8 @@ public class Location {
     public static final String MONTH_LABEL = "MONTH_LABEL";
     public static final String YEAR_LABEL = "YEAR_LABEL";
     public static final String DATE_LABEL = "DATE_LABEL";
-    public static final String[] MONTHS={"JANUARY", "FEBRUARY", "MARCH", "APRIL", "MAY", "JUNE", "JULY", "AUGUST", "SEPTEMBER", "OCTOBER", "NOVEMBER", "DECEMBER"};
+    public static final String[] MONTHS={"JANUARY", "FEBRUARY", "MARCH", "APRIL", "MAY", "JUNE", "JULY", "AUGUST",
+            "SEPTEMBER", "OCTOBER", "NOVEMBER", "DECEMBER"};
     public static final String[] NEW_PASSENGER_QUESTIONS = {"DNI", "NAME", "SURNAME"};
     public static final String NEW_PASSENGER_WINDOW_TITTLE = "NEW_PASSENGER_WINDOW_TITTLE";
     public static final String SUCCESSFUL_ROUTE_GENERATED = "SUCCESSFUL_ROUTE_GENERATED";
@@ -50,6 +61,9 @@ public class Location {
     public static final String ERROR_READING_PASSENGERS = "ERROR_READING_PASSENGERS";
     public static final String ERROR_READING_TRAVELS = "ERROR_READING_TRAVELS";
     public static final String ERROR_READING_STATUS = "ERROR_READING_STATUS";
+    public static final String ERROR_READING_A_PASSENGER = "ERROR_READING_A_PASSENGER";
+    public static final String ERROR_READING_A_TRAVEL = "ERROR_READING_A_TRAVEL";
+    public static final String CHANGE_LANGUAGE = "CHANGE_LANGUAGE";
 
     String[] systemLabels = {
             "OptionPane.cancelButtonText",
@@ -84,14 +98,14 @@ public class Location {
 
 
     /**
-     * Constructor method. If it can' load a locale with the received parameters, it will load the default one.
+     * Constructor method. If it can' load a locale with the received parameters, it will load the default language one
      * @param language String
      * @param country String
      */
     private Location(String language, String country) throws MissingResourceException{
         try {
-            Locale locale = new Locale(language, country);
-            resources = ResourceBundle.getBundle(LANGUAGE_FILES_PATH + LANGUAGE_FILES_HEADER + locale);
+            locale = new Locale(language, country);
+            resources = ResourceBundle.getBundle(LANGUAGE_FILES_PATH + LANGUAGE_FILES_HEADER, locale);
 
             if (!locale.equals(Locale.getDefault())) {
                 for (int i = 0; i < systemLabels.length; i++) {
@@ -99,8 +113,7 @@ public class Location {
                 }
             }
        } catch (MissingResourceException e) {
-            Locale locale = new Locale(Locale.getDefault().getLanguage(), Locale.getDefault().getCountry());
-            resources = ResourceBundle.getBundle(LANGUAGE_FILES_PATH + LANGUAGE_FILES_HEADER + locale);
+            resources = ResourceBundle.getBundle(LANGUAGE_FILES_PATH + LANGUAGE_FILES_HEADER);
         }
     }
 
@@ -136,13 +149,16 @@ public class Location {
      * @return String
      */
     public String getLabel(String label) {
-        String text = "";
-        try {
-            text = resources.getString(label);
-        } catch (MissingResourceException e){
-            text = ResourceBundle.getBundle( LANGUAGE_FILES_PATH + LANGUAGE_FILES_HEADER).getString(label);
-        }
-        return text;
+        return resources.getString(label);
+    }
+
+
+    /**
+     * Returns the locale.
+     * @return Locale
+     */
+    public Locale getLocale(){
+        return locale;
     }
 
 }

@@ -3,11 +3,12 @@
  *
  * View.CentralPanel.java
  *
- * @version 4.4
+ * @version 2.0
  * @author Pablo Sanz Alguacil
  */
 
 package View;
+import Internationalization.Location;
 import Model.SalesDesk;
 import Model.Travel;
 import javax.imageio.ImageIO;
@@ -19,7 +20,7 @@ import java.io.IOException;
 
 public class CentralPanel extends JPanel {
     private static final String DISTRIBUTION_SEPARATOR = "x";
-    private static final String BACKGROUND_IMAGE_PATH = "src/View/resources/bus.png";
+    private static final String BACKGROUND_IMAGE_PATH = "storage/img/bus.png";
     private static final int CORRIDOR_GAPS = 1;
     private static final int MINUM_SIZE_BACK_DOOR = 7;
     private static final int INFO_PANEL_WIDTH = 175;
@@ -99,7 +100,8 @@ public class CentralPanel extends JPanel {
                 } else if((row == (rows/2)) && (col > corridorColumn) && rows > MINUM_SIZE_BACK_DOOR) { //Back door
                     seatBoxes[row][col] = new SeatBox();
                 } else { //Seats
-                    seatBoxes[row][col] = new SeatBox(mainFrame, seatsIndex, salesDesk.searchPassenger(travel.whoIsSited(seatsIndex)));
+                    seatBoxes[row][col] = new SeatBox(mainFrame, seatsIndex,
+                            salesDesk.searchPassenger(travel.whoIsSited(seatsIndex)));
                     seatsIndex++;
                 }
                 matrix.add(seatBoxes[row][col]);

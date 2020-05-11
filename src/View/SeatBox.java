@@ -4,7 +4,7 @@
  *
  * View.Box.java
  *
- * @version 4.4
+ * @version 2.0
  * @author Pablo Sanz Alguacil
  */
 
@@ -27,8 +27,6 @@ public class SeatBox extends JButton {
     private Passenger passenger;
     private boolean inUse;
     private boolean selected;
-    private String dni;
-    private String nameAndSurnames;
     private Color defaultColor = getBackground();
     private Color darkerGreen = new Color(31, 155, 8);
     private Color darkerRed = new Color(192, 25, 8);
@@ -48,10 +46,8 @@ public class SeatBox extends JButton {
         this.setText(String.valueOf(seatNumber));
         if(passenger != null) {
             setAssigned(passenger);
-            dni = passenger.getDni();
-            nameAndSurnames = passenger.toString().split(ELEMENTS_SEPARATOR)[1] + TEXT_SPACER +
-                    passenger.toString().split(ELEMENTS_SEPARATOR)[2];
-            setToolTipText(nameAndSurnames + ELEMENTS_SEPARATOR + dni);
+            setToolTipText(passenger.getName() + TEXT_SPACER + passenger.getSurname() +
+                    ELEMENTS_SEPARATOR + passenger.getDni());
         } else {
             setDeallocated();
             setToolTipText("");

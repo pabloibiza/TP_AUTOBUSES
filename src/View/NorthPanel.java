@@ -3,13 +3,15 @@
  *
  * View.NorthPanel.java
  *
- * @version 4.4
+ * @version 2.0
  * @author Pablo Sanz Alguacil
  */
 
 package View;
 
+import Internationalization.Location;
 import Model.Travel;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -21,11 +23,14 @@ import java.util.List;
 public class NorthPanel extends JPanel {
     private static final String TEXT_SPACER = " ";
     private static final String COLON = ": ";
+    private static final String FLAG_IMAGES_PATH = "storage/img/";
+    private static final String FLAGS_IMAGES_EXTENSION = ".png";
 
     private MainFrame mainFrame;
     private JLabel travelsLabel;
     private JComboBox travelsComboBox;
     private Location location;
+    private JLabel languageIcon;
 
 
     /**
@@ -36,7 +41,7 @@ public class NorthPanel extends JPanel {
     public NorthPanel(MainFrame mainFrame, Location location) {
         this.mainFrame = mainFrame;
         this.location = location;
-        this.setLayout(new GridLayout(1, 3, 5, 5));
+        this.setLayout(new BorderLayout(10, 10));
         buildPanel();
     }
 
@@ -45,11 +50,18 @@ public class NorthPanel extends JPanel {
      * Builds the panel.
      */
     private void buildPanel() {
+        languageIcon = new JLabel();
+        languageIcon.setIcon(new ImageIcon(FLAG_IMAGES_PATH + location.getLocale()
+                + FLAGS_IMAGES_EXTENSION));
+        languageIcon.setToolTipText(location.getLabel(location.CHANGE_LANGUAGE));
+
         travelsLabel = new JLabel(location.getLabel(location.ROUTES) + COLON, SwingConstants.RIGHT);
         travelsComboBox = new JComboBox();
+        travelsComboBox.setPreferredSize(new Dimension(400, 45));
 
-        this.add(travelsLabel);
-        this.add(travelsComboBox);
+        this.add(languageIcon, BorderLayout.WEST);
+        this.add(travelsLabel, BorderLayout.CENTER);
+        this.add(travelsComboBox, BorderLayout.EAST);
 
         travelsComboBox.addActionListener(new ActionListener() {
             @Override
@@ -62,6 +74,7 @@ public class NorthPanel extends JPanel {
                 }
             }
         });
+
     }
 
     /**
@@ -110,12 +123,16 @@ public class NorthPanel extends JPanel {
         Collections.sort(travels, new Comparator<Travel>(){
             @Override
             public int compare(Travel t1, Travel t2) {
+                Integer t1Hour = t1.getDate().get(GregorianCalendar.HOUR);
+                Integer t1Minute = t1.getDate().get(GregorianCalendar.MINUTE);
+                Integer t2Hour = t2.getDate().get(GregorianCalendar.HOUR);
+                Integer t2Minute = t2.getDate().get(GregorianCalendar.MINUTE);
                 if(t1.getOrigin().compareToIgnoreCase(t2.getOrigin()) == 0) {
                     if(t1.getDestiny().compareToIgnoreCase(t2.getDestiny()) == 0) {
-                        if(t1.getHour().compareTo(t2.getHour()) == 0){
-                            return t1.getMinute().compareTo(t2.getMinute());
+                        if(t1Hour.compareTo(t2Hour) == 0){
+                            return t1Minute.compareTo(t2Minute);
                         } else {
-                            return t1.getHour().compareTo(t2.getHour());
+                            return t1Hour.compareTo(t2Hour);
                         }
                     } else {
                         return t1.getDestiny().compareToIgnoreCase(t2.getDestiny());
@@ -150,6 +167,5 @@ public class NorthPanel extends JPanel {
         int[] hourMinute = {hour,minute};
         return hourMinute;
     }
-
 
 }
