@@ -3,26 +3,29 @@
  *
  * Model.Passenger.java
  *
- * @version 2.1
+ * @version 2.0
  * @author Pablo Sanz Alguacil
  */
 
 package Model;
 
-import com.sun.istack.internal.NotNull;
 import java.io.PrintWriter;
+import java.util.NoSuchElementException;
 import java.util.Objects;
+import java.util.Scanner;
 
-public class Passenger implements Storable {
+public class Passenger {
     private String dni;
     private String name;
     private String surname;
+    private static final String ELEMENTS_SEPARATOR = ",";
+
 
     /**
      * Constructor method.
-     * @param dni
-     * @param name
-     * @param surname
+     * @param dni String
+     * @param name String
+     * @param surname String
      */
     public Passenger(String dni, String name, String surname){
         this.dni = dni;
@@ -31,21 +34,22 @@ public class Passenger implements Storable {
 
     }
 
+
     /**
      * Constructor method to create a new Model.Passenger from the received String. The String contains all data
      * separated by ";" for each element.
      * @param line String
      */
-    public Passenger(@NotNull String line) {
-        String[] elements = line.split(";");
-        this.dni = elements[0];
-        this.name = elements[1];
-        this.surname = elements[2];
+    public Passenger(String line) throws NoSuchElementException{
+        Scanner scanner = new Scanner(line).useDelimiter(ELEMENTS_SEPARATOR);
+        this.dni = scanner.next();
+        this.name = scanner.next();
+        this.surname = scanner.next();
     }
 
 
     /**
-     * Returns the DNI of the passenger.
+     * Returns the DNI.
      * @return Integer
      */
     public String getDni(){
@@ -54,19 +58,37 @@ public class Passenger implements Storable {
 
 
     /**
-     * Overwrited toString(). It returns a string composed by the DNI, name, and surname.
+     * Returns the name.
+     * @return
+     */
+    public String getName(){
+        return name;
+    }
+
+
+    /**
+     * Returns the surname.
+     * @return
+     */
+    public String getSurname(){
+        return surname;
+    }
+
+
+    /**
+     * Overrided toString(). It returns a string composed by the DNI, name, and surname.
      * @return String
      */
     @Override
     public String toString(){
-        return dni + ";" + name + ";" + surname;
+        return dni + ELEMENTS_SEPARATOR + name + ELEMENTS_SEPARATOR + surname;
     }
 
 
     /**
      * Overwrited equals. Compares an object with this passenger.
-     * @param obj
-     * @return
+     * @param obj Object
+     * @return Object
      */
     @Override
     public boolean equals(Object obj){
@@ -78,10 +100,21 @@ public class Passenger implements Storable {
 
 
     /**
-     * Saves a contact throw the receives PrintWriter.
-     * @param printWriter
+     * Overwrited hashCode.
+     * @return Integer
      */
     @Override
+    public int hashCode() {
+        int result = 23;
+        result = 19 * result + name.hashCode() + name.hashCode();
+        return 19 * result + dni.hashCode();
+    }
+
+
+    /**
+     * Saves a contact throw the receives PrintWriter.
+     * @param printWriter PrintWriter
+     */
     public void save(PrintWriter printWriter){
         printWriter.println(this.toString());
     }

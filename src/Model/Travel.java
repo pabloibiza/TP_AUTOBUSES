@@ -1,46 +1,55 @@
 /*
- * Type class Model.Travel. Contains an id, origin, destiny, date and sets distribution.
+ * Type class Model.Travel. Contains an id, origin, destiny, date, seats distribution, and ifo about the bus.
  *
  * Model.Travel.java
  *
- * @version 2.1
+ * @version 2.0
  * @author Pablo Sanz Alguacil
  */
 
 package Model;
 
-import com.sun.istack.internal.NotNull;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.io.PrintWriter;
-import java.util.GregorianCalendar;
-import java.util.Objects;
+import java.util.*;
 
-public class Travel implements Storable {
+public class Travel {
     private String id;
     private String origin;
     private String destiny;
     private GregorianCalendar date;
     private int seatsNumber;
-    private Pair[] seats;
+    private String[] seats;
     private String seatsDistribution;
+    private String info;
+    private PropertyChangeSupport observers;
+    private static final String ELEMENTS_SEPARATOR = ",";
+    private static final String DISTRIBUTION_SEPARATOR = "x";
+    private static final String DNI_SEAT_SEPARATOR = "-";
 
     /**
      * Constructor method.
-     * @param id
-     * @param origin
-     * @param destiny
-     * @param date
-     * @param seatsDistribution
+     * @param id String
+     * @param origin String
+     * @param destiny String
+     * @param date String
+     * @param seatsDistribution String
+     * @param info String
      */
-    public Travel(String id, String origin, String destiny, GregorianCalendar date, String seatsDistribution){
+    public Travel(String id, String origin, String destiny, GregorianCalendar date, String seatsDistribution,
+                  String info){
         this.id = id;
         this.origin = origin;
         this.destiny = destiny;
         this.date = date;
+        this.info = info;
         this.seatsDistribution = seatsDistribution;
+        observers = new PropertyChangeSupport(this);
 
-        String[] distribution = seatsDistribution.split("x");
-        seatsNumber = Integer.parseInt(distribution[0]) * Integer.parseInt(distribution[1]);
-        seats = new Pair[seatsNumber + 1];
+        String[] distribution = seatsDistribution.split(DISTRIBUTION_SEPARATOR);
+        seatsNumber = (Integer.parseInt(distribution[0]) * Integer.parseInt(distribution[1])) + 1;
+        seats = new String[seatsNumber + 1];
     }
 
     /**
@@ -48,32 +57,23 @@ public class Travel implements Storable {
      * data separated by ";" for each element.
      * @param line String
      */
-    public Travel(@NotNull String line) {
-        String[] tokens = line.split(";");
-        id = tokens[0];
-        origin = tokens[1];
-        destiny = tokens[2];
-        date = readGregorianCalendar(line);
-        seatsDistribution = tokens[8];
+    public Travel(String line) throws NoSuchElementException {
+        Scanner scanner = new Scanner(line).useDelimiter(ELEMENTS_SEPARATOR);
+        id = scanner.next();
+        origin = scanner.next();
+        destiny = scanner.next();
+        date = new GregorianCalendar(scanner.nextInt(),
+                scanner.nextInt(),
+                scanner.nextInt(),
+                scanner.nextInt(),
+                scanner.nextInt());
+        seatsDistribution = scanner.next();
+        info = scanner.next();
+        observers = new PropertyChangeSupport(this);
 
-        String[] distribution = seatsDistribution.split("x");
-        seatsNumber = Integer.parseInt(distribution[0]) * Integer.parseInt(distribution[1]);
-        seats = new Pair[seatsNumber + 1];
-    }
-
-    /**
-     * Returns a GregorianCalendar (year/month/day hh:mm) created from the received String.
-     * @param line String
-     * @return GregorianCalendar
-     */
-    private GregorianCalendar readGregorianCalendar(String line) {
-        String[] tokens = line.split(";");
-        return new GregorianCalendar(
-                Integer.parseInt(tokens[3]),
-                Integer.parseInt(tokens[4]),
-                Integer.parseInt(tokens[5]),
-                Integer.parseInt(tokens[6]),
-                Integer.parseInt(tokens[7]));
+        Scanner distribution = new Scanner(seatsDistribution).useDelimiter(DISTRIBUTION_SEPARATOR);
+        seatsNumber = (distribution.nextInt() * distribution.nextInt()) + 1;
+        seats = new String[seatsNumber + 1];
     }
 
 
@@ -105,16 +105,13 @@ public class Travel implements Storable {
 
 
     /**
-     * Returns the date ready to print on the screen.
-     * @return String
+     * Returns the date
+     * @return GregorianCalendar
      */
-    public String getDateToPrint(){
-        return date.get(GregorianCalendar.DAY_OF_MONTH) + "/" +
-                String.valueOf(Integer.parseInt(String.valueOf(date.get(GregorianCalendar.MONTH) + 1))) + "/" +
-                date.get(GregorianCalendar.YEAR) + "  " +
-                date.get(GregorianCalendar.HOUR_OF_DAY)+ ":" +
-                date.get(GregorianCalendar.MINUTE);
+    public GregorianCalendar getDate(){
+        return date;
     }
+
 
     /**
      * Returns the seats distribution (sits per row * rows)
@@ -133,6 +130,14 @@ public class Travel implements Storable {
         return seatsNumber;
     }
 
+    /**
+     * Returns info.
+     * @return String
+     */
+    public String getInfo(){
+        return info;
+    }
+
 
     /**
      * Overwrited equals. Compares an object with this travel.
@@ -149,50 +154,47 @@ public class Travel implements Storable {
 
 
     /**
+     * Overwrited hashCode.
+     * @return Integer
+     */
+    @Override
+    public int hashCode() {
+        int result = 23;
+        result = 19 * result + origin.hashCode();
+        result = 19 * result + destiny.hashCode();
+        result = 19 * result + date.hashCode();
+        result = 19 * result + seatsDistribution.hashCode();
+        return 19 * result + id.hashCode();
+    }
+
+
+    /**
      * Overwrited toString(). It returns a string composed by the id, origin, destiny, date, and seats distribution.
      * @return String
      */
     @Override
     public String toString() {
-        return id + ";" + origin + ";" + destiny + ";" +
-                date.get(GregorianCalendar.DAY_OF_MONTH) + ";" +
-                date.get(GregorianCalendar.MONTH) + ";" +
-                date.get(GregorianCalendar.YEAR) + ";" +
-                date.get(GregorianCalendar.HOUR_OF_DAY)+ ";" +
+        return id + ELEMENTS_SEPARATOR +
+                origin + ELEMENTS_SEPARATOR +
+                destiny + ELEMENTS_SEPARATOR +
+                date.get(GregorianCalendar.DAY_OF_MONTH) + ELEMENTS_SEPARATOR +
+                date.get(GregorianCalendar.MONTH) + ELEMENTS_SEPARATOR +
+                date.get(GregorianCalendar.YEAR) + ELEMENTS_SEPARATOR +
+                date.get(GregorianCalendar.HOUR_OF_DAY)+ ELEMENTS_SEPARATOR +
                 date.get(GregorianCalendar.MINUTE);
     }
 
 
-    /**w
-     * Saves the travel throw the received PrintWriter.
-     * @param printWriter PrintWriter
-     */
-    @Override
-    public void save(PrintWriter printWriter){
-        StringBuilder line = new StringBuilder();
-        line.append(id).append(";")
-                .append(origin).append(";")
-                .append(destiny).append(";")
-                .append(date.get(GregorianCalendar.YEAR)).append(";")
-                .append(date.get(GregorianCalendar.MONTH)).append(";")
-                .append(date.get(GregorianCalendar.DAY_OF_MONTH)).append(";")
-                .append(date.get(GregorianCalendar.HOUR_OF_DAY)).append(";")
-                .append(date.get(GregorianCalendar.MINUTE)).append(";")
-                .append(seatsDistribution);
-        printWriter.println(line);
-    }
-
-
     /**
-     * Saves the travel status throw the recieved PrintWriter.
+     * Saves the travel status throw the received PrintWriter.
      * @param printWriter PrintWriter
      */
     public void saveTravelStatus(PrintWriter printWriter){
         StringBuilder line = new StringBuilder();
-        line.append(id).append(";");
+        line.append(id).append(ELEMENTS_SEPARATOR);
         for(int i = 1; i < seats.length; i++){
             if(seats[i] != null) {
-                line.append(seats[i].getSeat()).append("-").append(seats[i].getPassengerID()).append(";");
+                line.append(i).append(DNI_SEAT_SEPARATOR).append(seats[i]).append(ELEMENTS_SEPARATOR);
             }
         }
         printWriter.println(line);
@@ -203,11 +205,12 @@ public class Travel implements Storable {
      * Assigns a seat to a received passenger (only DNI). Returns true in case of success.
      * @param seat Integer
      * @param passengerID String
-     * @return booean
+     * @return boolean
      */
     public boolean assignSeat(int seat, String passengerID){
             if(seats[seat] == null){
-                seats[seat] = new Pair<>(seat, passengerID);
+                seats[seat] = passengerID;
+                observers.firePropertyChange("SEAT_CHANGE", null, null);
                 return true;
             }
             return false;
@@ -217,9 +220,16 @@ public class Travel implements Storable {
     /**
      * Removes the asignated pasenger of the received seat.
      * @param seat Integer
+     * @return boolean
      */
-    public void unassignSeat(int seat){
+    public boolean deallocateSeat(int seat){
         seats[seat] = null;
+        if(seats[seat] == null) {
+            observers.firePropertyChange("SEAT_CHANGE", null, null);
+            return true;
+        } else {
+            return false;
+        }
     }
 
 
@@ -245,11 +255,23 @@ public class Travel implements Storable {
     public String whoIsSited(int seat) throws NullPointerException{
         String passengerID;
         if(!isSeatFree(seat)){
-            passengerID = seats[seat].getPassengerID();
+            passengerID = seats[seat];
         }else{
             return null;
         }
         return passengerID;
     }
+
+
+    /**
+     * Adds an observer to this travel.
+     * @param observer PropertyChangeListener
+     */
+    public void addObserver(PropertyChangeListener observer) {
+        this.observers.addPropertyChangeListener(observer);
+    }
+
+
+
 }
 
