@@ -54,7 +54,11 @@ public class SouthPanel extends JPanel {
         assignButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                mainFrame.assignSeat();
+                try {
+                    mainFrame.assignSeat();
+                } catch (Exception exception) {
+                    mainFrame.errorMessage(location.getLabel(location.SEAT_ASSIGN_ERROR), exception);
+                }
             }
         });
 
@@ -66,7 +70,11 @@ public class SouthPanel extends JPanel {
                         "",
                         JOptionPane.YES_NO_OPTION);
                 if(option == 0) { // Selected: YES
-                    mainFrame.deallocateSeat();
+                    try {
+                        mainFrame.deallocateSeat();
+                    } catch (Exception exception) {
+                        mainFrame.errorMessage(location.getLabel(location.SEAT_DEALLOCATION_ERROR), exception);
+                    }
                 }
             }
         });
@@ -74,7 +82,11 @@ public class SouthPanel extends JPanel {
         routeSheetButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                viewListener.producedEvent(ViewListener.Event.GENERATE_ROUTE_SHEET, mainFrame.getSelectedTravel());
+                try {
+                    viewListener.producedEvent(ViewListener.Event.GENERATE_ROUTE_SHEET, mainFrame.getSelectedTravel());
+                } catch (Exception exception) {
+                    mainFrame.errorMessage(location.getLabel(location.ERROR_ROUTE_SHEET), exception);
+                }
             }
         });
     }
@@ -100,7 +112,7 @@ public class SouthPanel extends JPanel {
 
 
     /**
-     * Replaces the aasign button by the unasign one.
+     * Replaces the assign button by the deallocate one.
      */
     public void changeToDeallocate(){
         this.removeAll();

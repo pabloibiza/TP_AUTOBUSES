@@ -23,10 +23,8 @@ public class Travel {
     private String[] seats;
     private String seatsDistribution;
     private String info;
-    private PropertyChangeSupport observers;
     private static final String ELEMENTS_SEPARATOR = ",";
     private static final String DISTRIBUTION_SEPARATOR = "x";
-    private static final String DNI_SEAT_SEPARATOR = "-";
 
     /**
      * Constructor method.
@@ -45,7 +43,6 @@ public class Travel {
         this.date = date;
         this.info = info;
         this.seatsDistribution = seatsDistribution;
-        observers = new PropertyChangeSupport(this);
 
         String[] distribution = seatsDistribution.split(DISTRIBUTION_SEPARATOR);
         seatsNumber = (Integer.parseInt(distribution[0]) * Integer.parseInt(distribution[1])) + 1;
@@ -69,7 +66,6 @@ public class Travel {
                 scanner.nextInt());
         seatsDistribution = scanner.next();
         info = scanner.next();
-        observers = new PropertyChangeSupport(this);
 
         Scanner distribution = new Scanner(seatsDistribution).useDelimiter(DISTRIBUTION_SEPARATOR);
         seatsNumber = (distribution.nextInt() * distribution.nextInt()) + 1;
@@ -181,97 +177,10 @@ public class Travel {
                 date.get(GregorianCalendar.MONTH) + ELEMENTS_SEPARATOR +
                 date.get(GregorianCalendar.YEAR) + ELEMENTS_SEPARATOR +
                 date.get(GregorianCalendar.HOUR_OF_DAY)+ ELEMENTS_SEPARATOR +
-                date.get(GregorianCalendar.MINUTE);
+                date.get(GregorianCalendar.MINUTE) + ELEMENTS_SEPARATOR +
+                seatsDistribution + ELEMENTS_SEPARATOR +
+                info;
+
     }
-
-
-    /**
-     * Saves the travel status throw the received PrintWriter.
-     * @param printWriter PrintWriter
-     */
-    public void saveTravelStatus(PrintWriter printWriter){
-        StringBuilder line = new StringBuilder();
-        line.append(id).append(ELEMENTS_SEPARATOR);
-        for(int i = 1; i < seats.length; i++){
-            if(seats[i] != null) {
-                line.append(i).append(DNI_SEAT_SEPARATOR).append(seats[i]).append(ELEMENTS_SEPARATOR);
-            }
-        }
-        printWriter.println(line);
-    }
-
-
-    /**
-     * Assigns a seat to a received passenger (only DNI). Returns true in case of success.
-     * @param seat Integer
-     * @param passengerID String
-     * @return boolean
-     */
-    public boolean assignSeat(int seat, String passengerID){
-            if(seats[seat] == null){
-                seats[seat] = passengerID;
-                observers.firePropertyChange("SEAT_CHANGE", null, null);
-                return true;
-            }
-            return false;
-    }
-
-
-    /**
-     * Removes the asignated pasenger of the received seat.
-     * @param seat Integer
-     * @return boolean
-     */
-    public boolean deallocateSeat(int seat){
-        seats[seat] = null;
-        if(seats[seat] == null) {
-            observers.firePropertyChange("SEAT_CHANGE", null, null);
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-
-    /**
-     * Checks if the received seat free. Returns true in case of be free.
-     * @param seat Integer
-     * @return boolean
-     */
-    public boolean isSeatFree(int seat){
-        if(seat <= seatsNumber) {
-            return seats[seat] == null;
-        }
-        return false;
-    }
-
-
-    /**
-     * Returns the passenger DNI who is sited on the received seat.
-     * @param seat Integer
-     * @return String
-     * @throws NullPointerException
-     */
-    public String whoIsSited(int seat) throws NullPointerException{
-        String passengerID;
-        if(!isSeatFree(seat)){
-            passengerID = seats[seat];
-        }else{
-            return null;
-        }
-        return passengerID;
-    }
-
-
-    /**
-     * Adds an observer to this travel.
-     * @param observer PropertyChangeListener
-     */
-    public void addObserver(PropertyChangeListener observer) {
-        this.observers.addPropertyChangeListener(observer);
-    }
-
-
-
 }
 

@@ -57,10 +57,10 @@ public class Office implements ViewListener {
             System.exit(1);
         }
 
-        salesDesk = SalesDesk.getSingletonInstance(location,
-                PASSENGERS_FILE_PATH, TRAVELS_FILE_PATH, TRAVELS_STATUS_FILE_PATH);
+        salesDesk = SalesDesk.getSingletonInstance(location);
         mainFrame = MainFrame.getSingletonInstance(this, salesDesk, location);
-        salesDesk.setTravelsObserver(mainFrame);
+        salesDesk.newObserver(mainFrame);
+        salesDesk.connect();
     }
 
 
@@ -100,6 +100,7 @@ public class Office implements ViewListener {
             language = config.getProperty(LANGUAGE_PARAMETER);
             country = config.getProperty(COUNTRY_PARAMETER);
 
+
             if (language.equals("") || country.equals("")){
                 language = Locale.getDefault().getLanguage();
                 country = Locale.getDefault().getCountry();
@@ -122,31 +123,12 @@ public class Office implements ViewListener {
 
 
     /**
-     * Adds a new passenger and saves all passengers.
-     * @param passenger Passenger
-     */
-    private void newPassenger(Passenger passenger){
-        salesDesk.addPassenger(passenger);
-        try {
-            salesDesk.savePassengers(PASSENGERS_FILE_PATH);
-        } catch (IOException e) {
-            mainFrame.errorMessage(location.getLabel(location.ERROR_SAVING_PASSENGERS), e);
-        }
-    }
-
-
-    /**
      * Deletes a passenger and saves all passengers.
      * @param id String
      */
-    private void deletePassenger(String id){
+    private void deletePassenger(String id) throws Exception{
         if(!salesDesk.deletePassenger(salesDesk.searchPassenger(id))){
             mainFrame.errorMessage(location.getLabel(location.PASSENGER_NOT_EXISTANT), null);
-        };
-        try {
-            salesDesk.savePassengers(PASSENGERS_FILE_PATH);
-        } catch (IOException e) {
-            mainFrame.errorMessage(location.getLabel(location.ERROR_SAVING_PASSENGERS), e);
         }
     }
 
@@ -156,7 +138,7 @@ public class Office implements ViewListener {
      * @param id String
      * @throws IOException
      */
-    private void generateRouteSheet(String id) {
+    private void generateRouteSheet(String id) throws Exception{
         salesDesk.generateTravelSheet(salesDesk.searchTravel(id));
         mainFrame.infoMessage(location.getLabel(location.SUCCESSFUL_ROUTE_GENERATED));
     }
@@ -166,7 +148,7 @@ public class Office implements ViewListener {
      * Assigns a seat for a passenger on a travel.
      * @param assignationData String[] [travel,passenger,seat]
      */
-    private void assignSeat(Object[] assignationData) {
+    private void assignSeat(Object[] assignationData) throws Exception {
         Travel travel = (Travel) assignationData[0];
         Passenger passenger = (Passenger) assignationData[1];
         int seat = (Integer) assignationData[2];
@@ -174,11 +156,6 @@ public class Office implements ViewListener {
             mainFrame.infoMessage(location.getLabel(location.SEAT_ASSIGN_SUCCESS));
         } else
             mainFrame.errorMessage(location.getLabel(location.SEAT_ASSIGN_ERROR), null);
-        try {
-            salesDesk.saveTravelsStatus(TRAVELS_STATUS_FILE_PATH);
-        } catch (IOException e) {
-            mainFrame.errorMessage(location.getLabel(location.ERROR_SAVING_TRAVELS_STATUS), e);
-        }
     }
 
 
@@ -186,18 +163,13 @@ public class Office implements ViewListener {
      * Unassigns a seat for a passenger.
      * @param unassignationData String[] [travel, seat]
      */
-    private void unassignSeat(Object[] unassignationData) {
+    private void unassignSeat(Object[] unassignationData) throws Exception {
         Travel travel = (Travel) unassignationData[0];
         int seat = (Integer) unassignationData[1];
         if(salesDesk.deallocateSeat(travel, seat)){
             mainFrame.infoMessage(location.getLabel(location.SEAT_DEALLOCATION_SUCCESS));
         } else {
             mainFrame.errorMessage(location.getLabel(location.SEAT_DEALLOCATION_ERROR), null);
-        }
-        try {
-            salesDesk.saveTravelsStatus(TRAVELS_STATUS_FILE_PATH);
-        } catch (IOException e) {
-            mainFrame.errorMessage(location.getLabel(location.ERROR_SAVING_TRAVELS_STATUS), e);
         }
     }
 
@@ -208,17 +180,14 @@ public class Office implements ViewListener {
      * @param object Object
      */
     @Override
-    public void producedEvent(Event event, Object object) {
+    public void producedEvent(Event event, Object object) throws Exception{
         switch(event) {
-            case NEW_PASSENGER:
-                newPassenger((Passenger) object);
-                break;
-
             case DELETE_PASSENGER:
                 deletePassenger((String) object);
                 break;
 
             case EXIT:
+                salesDesk.disconnect();
                 exit();
                 break;
 

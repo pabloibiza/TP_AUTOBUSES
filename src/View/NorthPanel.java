@@ -13,6 +13,8 @@ import Internationalization.Location;
 import Model.Travel;
 
 import javax.swing.*;
+import javax.swing.border.Border;
+import javax.swing.border.EtchedBorder;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -23,14 +25,20 @@ import java.util.List;
 public class NorthPanel extends JPanel {
     private static final String TEXT_SPACER = " ";
     private static final String COLON = ": ";
-    private static final String FLAG_IMAGES_PATH = "storage/img/";
-    private static final String FLAGS_IMAGES_EXTENSION = ".png";
+    private static final String IMAGES_PATH = "storage/img/";
+    private static final String PNG_IMAGES_EXTENSION = ".png";
+    private static final String CONNECTED_ICON = "connected";
+    private static final String DISCONNECTED_ICON = "disconnected";
 
     private MainFrame mainFrame;
     private JLabel travelsLabel;
     private JComboBox travelsComboBox;
     private Location location;
     private JLabel languageIcon;
+    private JLabel connectedIcon;
+    private JPanel west;
+    private JLabel clientConncetionID;
+
 
 
     /**
@@ -38,11 +46,12 @@ public class NorthPanel extends JPanel {
      *
      * @param mainFrame MainFrame
      */
-    public NorthPanel(MainFrame mainFrame, Location location) {
+    public NorthPanel(MainFrame mainFrame, Location location, String clientID, String connectionID) {
         this.mainFrame = mainFrame;
         this.location = location;
         this.setLayout(new BorderLayout(10, 10));
         buildPanel();
+        updateConnectionIDLabel(clientID, connectionID);
     }
 
 
@@ -51,15 +60,26 @@ public class NorthPanel extends JPanel {
      */
     private void buildPanel() {
         languageIcon = new JLabel();
-        languageIcon.setIcon(new ImageIcon(FLAG_IMAGES_PATH + location.getLocale()
-                + FLAGS_IMAGES_EXTENSION));
+        languageIcon.setIcon(new ImageIcon(IMAGES_PATH + location.getLocale()
+                + PNG_IMAGES_EXTENSION));
         languageIcon.setToolTipText(location.getLabel(location.CHANGE_LANGUAGE));
+
+        connectedIcon = new JLabel();
+        connectedIcon.setIcon(new ImageIcon(IMAGES_PATH + DISCONNECTED_ICON + PNG_IMAGES_EXTENSION));
 
         travelsLabel = new JLabel(location.getLabel(location.ROUTES) + COLON, SwingConstants.RIGHT);
         travelsComboBox = new JComboBox();
         travelsComboBox.setPreferredSize(new Dimension(400, 45));
 
-        this.add(languageIcon, BorderLayout.WEST);
+        clientConncetionID = new JLabel();
+
+        west = new JPanel(new FlowLayout(0,30,3));
+        west.setBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED));
+
+        west.add(languageIcon);
+        west.add(connectedIcon);
+        west.add(clientConncetionID);
+        this.add(west, BorderLayout.WEST);
         this.add(travelsLabel, BorderLayout.CENTER);
         this.add(travelsComboBox, BorderLayout.EAST);
 
@@ -67,9 +87,12 @@ public class NorthPanel extends JPanel {
             @Override
             public void actionPerformed(ActionEvent e) {
                 try{
-                    mainFrame.updateBusMatrix(getSelectedTravel());
-                    mainFrame.travelSelected(getSelectedTravel());
+                    String travelID = getSelectedTravel();
+                    mainFrame.updateBusMatrix(travelID);
+                    mainFrame.travelSelected(travelID);
                 } catch (NullPointerException nullPointerException){
+                    mainFrame.cleanMatrix();
+                } catch (Exception exception) {
                     mainFrame.cleanMatrix();
                 }
             }
@@ -88,7 +111,7 @@ public class NorthPanel extends JPanel {
         String elementName;
         travelsComboBox.removeAllItems();
 
-        if(travels.isEmpty()){
+        if(travels == null|| travels.isEmpty() ){
             mainFrame.receivedListEmpty();
 
         } else {
@@ -166,6 +189,28 @@ public class NorthPanel extends JPanel {
         int minute = Integer.parseInt(selectedItem.split(" ")[1].split(":")[1]);
         int[] hourMinute = {hour,minute};
         return hourMinute;
+    }
+
+
+    /**
+     * Changes the connected icon depending on the received status.
+     * @param status Boolean
+     */
+    public void setConnectedIcon(boolean status) {
+        if(status) {
+            connectedIcon.setIcon(new ImageIcon(IMAGES_PATH + CONNECTED_ICON + PNG_IMAGES_EXTENSION));
+        } else {
+            connectedIcon.setIcon(new ImageIcon(IMAGES_PATH + DISCONNECTED_ICON + PNG_IMAGES_EXTENSION));
+        }
+    }
+
+
+    /**
+     * Updates the connection ID
+     */
+    public void updateConnectionIDLabel(String clientID, String connectionID) {
+        String text = clientID + " [" + connectionID + "]";
+        clientConncetionID.setText(text);
     }
 
 }

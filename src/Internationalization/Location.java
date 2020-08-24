@@ -64,6 +64,8 @@ public class Location {
     public static final String ERROR_READING_A_PASSENGER = "ERROR_READING_A_PASSENGER";
     public static final String ERROR_READING_A_TRAVEL = "ERROR_READING_A_TRAVEL";
     public static final String CHANGE_LANGUAGE = "CHANGE_LANGUAGE";
+    public static final String ERROR_ROUTE_SHEET = "ERROR_ROUTE_SHEET";
+    public static final String ERROR_GETTING_TRAVELS = "ERROR_GETTING_TRAVELS";
 
     String[] systemLabels = {
             "OptionPane.cancelButtonText",

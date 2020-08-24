@@ -109,13 +109,4 @@ public class Passenger {
         result = 19 * result + name.hashCode() + name.hashCode();
         return 19 * result + dni.hashCode();
     }
-
-
-    /**
-     * Saves a contact throw the receives PrintWriter.
-     * @param printWriter PrintWriter
-     */
-    public void save(PrintWriter printWriter){
-        printWriter.println(this.toString());
-    }
 }

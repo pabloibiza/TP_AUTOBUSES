@@ -13,6 +13,7 @@ import Control.ViewListener;
 import Internationalization.Location;
 import Model.Passenger;
 import Model.SalesDesk;
+import Model.Travel;
 
 import javax.swing.*;
 import java.awt.*;
@@ -20,6 +21,7 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.net.SocketTimeoutException;
 import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -27,6 +29,9 @@ import java.util.NoSuchElementException;
 public class MainFrame extends JFrame implements PropertyChangeListener{
     private static final String COLON = ": ";
     private static final String ELEMENTS_SEPARATOR = ",";
+
+    private static final String SEAT_CHANGED_PROPERTY = "Seat changed";
+    private static final String CONNECTED_PROPERTY = "Connected";
 
     private static MainFrame mainFrame;
     private ViewListener viewListener;
@@ -50,7 +55,7 @@ public class MainFrame extends JFrame implements PropertyChangeListener{
         westPanel = new WestPanel(this, viewListener, location);
         this.add(westPanel, BorderLayout.WEST);
 
-        northPanel = new NorthPanel(this, location);
+        northPanel = new NorthPanel(this, location, salesDesk.getClientID(), salesDesk.getConnectionID());
         this.add(northPanel, BorderLayout.NORTH);
 
         southPanel = new SouthPanel(this, viewListener, location);
@@ -108,7 +113,11 @@ public class MainFrame extends JFrame implements PropertyChangeListener{
         addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
-                viewListener.producedEvent(ViewListener.Event.EXIT, null);
+                try {
+                    viewListener.producedEvent(ViewListener.Event.EXIT, null);
+                } catch (Exception exception) {
+                    exception.printStackTrace();
+                }
             }
         });
     }
@@ -118,9 +127,17 @@ public class MainFrame extends JFrame implements PropertyChangeListener{
      * Updates de travels north's panel combo box.
      * @param date GregorianCalendar
      */
-    public void updateTravelsPerDate(GregorianCalendar date){
-        List travels = salesDesk.searchTravelsPerDate(date);
-        northPanel.updateTravels(travels);
+    public void updateTravelsPerDate(GregorianCalendar date) {
+        List<Travel> travels = null;
+        try{
+            travels = salesDesk.searchTravelsPerDate(date);
+            northPanel.updateTravels(travels);
+        } catch ( SocketTimeoutException to) {
+            mainFrame.infoMessage(location.getLabel(location.NO_TRAVELS));
+        } catch (Exception e){
+            e.printStackTrace();
+            mainFrame.infoMessage(location.getLabel(location.ERROR_GETTING_TRAVELS));
+        }
 
     }
 
@@ -208,7 +225,7 @@ public class MainFrame extends JFrame implements PropertyChangeListener{
      * Builds the seats matrix for a given travel
      * @param travelID String
      */
-    public void updateBusMatrix(String travelID) {
+    public void updateBusMatrix(String travelID) throws Exception {
         centralPanel.updateMatrix(salesDesk.searchTravel(travelID));
     }
 
@@ -255,12 +272,10 @@ public class MainFrame extends JFrame implements PropertyChangeListener{
     /**
      * Assigns a seat on a travel for a passenger.
      */
-    public void assignSeat(){
+    public void assignSeat() throws Exception {
         Passenger newPassenger = askPassengerInfo();
         if(newPassenger != null) {
-            viewListener.producedEvent(
-                    ViewListener.Event.NEW_PASSENGER,
-                    newPassenger);
+            //viewListener.producedEvent(ViewListener.Event.NEW_PASSENGER, newPassenger);
             viewListener.producedEvent(
                     ViewListener.Event.ASSIGN,
                     new Object[]{
@@ -274,10 +289,7 @@ public class MainFrame extends JFrame implements PropertyChangeListener{
     /**
      * Deallocates a seat on a travel for a passenger.
      */
-    public void deallocateSeat() {
-        viewListener.producedEvent(
-                ViewListener.Event.DELETE_PASSENGER,
-                getSelectedSeat().getDni());
+    public void deallocateSeat() throws Exception {
         viewListener.producedEvent(ViewListener.Event.DEALLOCATE,
                 new Object[] {
                         salesDesk.searchTravel(getSelectedTravel()),
@@ -335,6 +347,28 @@ public class MainFrame extends JFrame implements PropertyChangeListener{
     }
 
 
+    /**
+     * Behaviour when a seat status has been changed on a travel
+     * @param id String
+     */
+    private void seatChangeFired(String id) {
+        try {
+            if (id.equals(selectedTravel))
+                updateBusMatrix(id);
+                setSelectedSeat(null);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Cahnges the connection label when the client is connected or not.
+     * @param status Boolean
+     */
+    private void setConnectedLabel(boolean status){
+        northPanel.setConnectedIcon(status);
+    }
+
 
     /**
      * Receives events and perform different actions depending on the event.
@@ -343,9 +377,13 @@ public class MainFrame extends JFrame implements PropertyChangeListener{
     @Override
     public void propertyChange(PropertyChangeEvent event) {
         switch(event.getPropertyName()){
-            case "SEAT_CHANGE":
-                updateBusMatrix(getSelectedTravel());
-                setSelectedSeat(null);
+            case SEAT_CHANGED_PROPERTY:
+                seatChangeFired((String) event.getNewValue());
+                break;
+
+            case CONNECTED_PROPERTY:
+                setConnectedLabel((boolean) event.getNewValue());
+                northPanel.updateConnectionIDLabel(salesDesk.getClientID(), salesDesk.getConnectionID());
                 break;
         }
     }

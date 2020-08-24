@@ -9,6 +9,7 @@
 
 package View;
 import Internationalization.Location;
+import Model.Passenger;
 import Model.SalesDesk;
 import Model.Travel;
 import javax.imageio.ImageIO;
@@ -73,7 +74,7 @@ public class CentralPanel extends JPanel {
      * Updates the matrix for the received travel.
      * @param travel Travel
      */
-    public void updateMatrix(Travel travel) {
+    public void updateMatrix(Travel travel) throws Exception {
         matrix.removeAll();
         int cols = Integer.parseInt(travel.getSeatsDistribution().split(DISTRIBUTION_SEPARATOR)[0]) + CORRIDOR_GAPS;
         int rows = Integer.parseInt(travel.getSeatsDistribution().split(DISTRIBUTION_SEPARATOR)[1]);
@@ -88,7 +89,7 @@ public class CentralPanel extends JPanel {
      * Builds the matrix to represent the buses seats distribution.
      * @param travel Travel
      */
-    private void buildMatrix(int rows, int cols, Travel travel) {
+    private void buildMatrix(int rows, int cols, Travel travel) throws Exception {
         int seatsIndex = 1;
         int corridorColumn = (((cols - CORRIDOR_GAPS) / 2) + ((cols - CORRIDOR_GAPS) % 2));
         seatBoxes = new SeatBox[rows][cols];
@@ -100,8 +101,8 @@ public class CentralPanel extends JPanel {
                 } else if((row == (rows/2)) && (col > corridorColumn) && rows > MINUM_SIZE_BACK_DOOR) { //Back door
                     seatBoxes[row][col] = new SeatBox();
                 } else { //Seats
-                    seatBoxes[row][col] = new SeatBox(mainFrame, seatsIndex,
-                            salesDesk.searchPassenger(travel.whoIsSited(seatsIndex)));
+                    Passenger passenger = salesDesk.whoIsSitting(travel, seatsIndex);
+                    seatBoxes[row][col] = new SeatBox(mainFrame, seatsIndex, passenger);
                     seatsIndex++;
                 }
                 matrix.add(seatBoxes[row][col]);
@@ -129,7 +130,7 @@ public class CentralPanel extends JPanel {
     }
 
     /**
-     * Paints the packground with and image.
+     * Paints the background with and image.
      * @param g Graphics
      */
     @Override

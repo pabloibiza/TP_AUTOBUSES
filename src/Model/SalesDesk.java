@@ -10,60 +10,69 @@
 package Model;
 
 import Internationalization.Location;
+import Model.Cloud.Client;
+import Model.Cloud.CommunicationPrimitive;
+import Model.Cloud.ServerListener;
 
-import javax.swing.*;
 import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.io.*;
 import java.util.*;
 
 
-public class SalesDesk {
+public class SalesDesk implements ServerListener{
     private static SalesDesk salesDesk;
     private Location location;
-    private static Set<Passenger> passengers;
-    private static Set<Travel> travels;
-    private static final String ELEMENTS_SEPARATOR = ",";
+    private Properties config;
+    private static final String CONFIG_FILE_PATH  = "storage/conf/config.properties";
+    private static final String SERVER_URL_PARAMETER = "server";
+    private static final String SERVER_PORT_PARAMETER = "port";
+    private static final String CLIENT_ID_PARAMETER = "clientID";
+
+    private String serverURL;
+    private int serverPort;
+    private String clientID;
+    private String defaultServerURL = "localhost";
+    private int defaultServerPort = 60236;
+    private String defaultClientID = "Guest";
+    private boolean connected;
+    private String connectionID;
+    private PropertyChangeSupport observers;
+    private ServerListener serverListener;
+    private Client client;
+
     private static final String DISTRIBUTION_SEPARATOR = "x";
     private static final String COLON = ": ";
     private static final String TEXT_SPACER = " ";
     private static final String SLASH = "/";
-    private static final String ROUTE_SHEET_FILE_ESXTENSION = ".txt";
-    private static final String DNI_SEAT_SEPARATOR = "-";
-    private static final String INSTANCE_ALREADY_CREATED = "Is not possible to create more than one instance of ";
+    private static final String ROUTE_SHEET_FILE_EXTENSION = ".txt";
     private static final String[] COLUMNS_DESIGNATION = {"A", "B", "C", "D", "E", "F"};
     private static final int MINUM_SIZE_BACK_DOOR = 7;
 
+    private static final String CONNECTED_PROPERTY = "Connected";
+    private static final String SEAT_CHANGED_PROPERTY = "Seat changed";
+
     /**
-     * Constructor method. Creates an office and loads the saved statuses of passengers and travels.
-     * @param passengersFile String
-     * @param travelsFile String
-     * @param travelsStatusFile String
+     * Constructor method. Creates an office and loads the saved status of passengers and travels.
      */
-    private SalesDesk(Location location, String passengersFile, String travelsFile, String travelsStatusFile) {
-        //Con los synchronized Sets se asegura la exclusión mutua al acceder a las Colecciones.
-        passengers = Collections.synchronizedSet(new HashSet<Passenger>());
-        travels =  Collections.synchronizedSet(new HashSet<Travel>());
+    private SalesDesk(Location location) {
+        loadConfigs();
         this.location = location;
-        readTravels(travelsFile);
-        readPassengers(passengersFile);
-        readTravelsStatus(travelsStatusFile);
+        connected = false;
+        observers = new PropertyChangeSupport(this);
+        serverListener = this;
+        client = new Client(serverURL, serverPort);
+
     }
 
 
     /**
      * Creates a singleton instance.
-     * @param passengersFile String
-     * @param travelsFile String
-     * @param travelsStatusFile String
      * @return SalesDesk
      */
-    public static synchronized SalesDesk getSingletonInstance(Location location, String passengersFile,
-                                                              String travelsFile, String travelsStatusFile) {
+    public static synchronized SalesDesk getSingletonInstance(Location location) {
         if (salesDesk == null){
-            salesDesk = new SalesDesk(location, passengersFile, travelsFile, travelsStatusFile);
-        }
-        else{
-            System.out.println(INSTANCE_ALREADY_CREATED + salesDesk.getClass().getSimpleName());
+            salesDesk = new SalesDesk(location);
         }
         return salesDesk;
     }
@@ -81,16 +90,122 @@ public class SalesDesk {
 
 
     /**
-     * Adds a new passenger. Returns true in case of success.
-     * @param passenger Model.Passenger.
-     * @return boolean.
+     * Loads the configuration from a properties file.
      */
-    public boolean addPassenger (Passenger passenger) {
-        if(searchPassenger(passenger.getDni()) == null) {
-            passengers.add(passenger);
-            return true;
+    private void loadConfigs() {
+        try {
+            config = new Properties();
+            config.load(new FileInputStream(CONFIG_FILE_PATH));
+
+            try {
+                serverURL = config.getProperty(SERVER_URL_PARAMETER);
+            } catch (Exception e) {
+                serverURL = defaultServerURL;
+            }
+
+            try {
+                serverPort = Integer.parseInt(config.getProperty(SERVER_PORT_PARAMETER));
+            } catch (Exception e) {
+                serverPort = defaultServerPort;
+            }
+
+            try {
+                clientID = config.getProperty(CLIENT_ID_PARAMETER);
+            } catch (Exception e) {
+                clientID = defaultClientID;
+            }
+
+        } catch (FileNotFoundException e) {
+            setAllDefaults();
+
+        } catch (IOException e) {
+            setAllDefaults();
+
+        } finally {
+            config.setProperty(SERVER_URL_PARAMETER, serverURL);
+            config.setProperty(SERVER_PORT_PARAMETER, String.valueOf(serverPort));
         }
-        return false;
+    }
+
+
+    /**
+     * Sets all loadable parameters to its default options
+     */
+    public void setAllDefaults() {
+        serverURL = defaultServerURL;
+        serverPort = defaultServerPort;
+        clientID = defaultClientID;
+    }
+
+
+    /**
+     * Adds a new observer.
+     * @param observer PropertyChangeListener
+     */
+    public void newObserver(PropertyChangeListener observer) {
+        this.observers.addPropertyChangeListener(observer);
+    }
+
+
+    /**
+     * Returns the connection ID.
+     * @return String
+     */
+    public String getConnectionID() {
+        if (connected) {
+            return connectionID;
+        }
+        return "---";
+    }
+
+
+    /**
+     * Returns the client ID.
+     * @return String
+     */
+    public String getClientID() {
+        return clientID;
+    }
+
+
+    /**
+     * Stablishes connection to server by long polling.
+     */
+    public void connect() {
+        new Thread() {
+            @Override
+            public void run() {
+                Client client = new Client(serverURL, serverPort);
+
+                while(true) {
+                    try {
+                        client.sendLongPollingRequest(CommunicationPrimitive.CONNECT_PUSH, Client.WAITTIME_LONGPOOLING, clientID, serverListener);
+                    } catch (Exception e) {
+                        connected = false;
+                        observers.firePropertyChange(CONNECTED_PROPERTY, null, connected);
+
+                        try {
+                            sleep(Client.WAITTIME_SERVER_RECONECT_ATTEMPT);
+                        } catch (InterruptedException e2) {
+                            new RuntimeException();
+                        }
+                    }
+                }
+            }
+        }.start();
+    }
+
+
+    /**
+     * Disconnects the client from the server.
+     * @throws Exception
+     */
+    public void disconnect() throws Exception {
+        if ( ! connected) {
+            return;
+        }
+
+        client.sendRequest(CommunicationPrimitive.DISCONNECT_PUSH, Client.WAITTIME_SERVER, connectionID);
     }
 
 
@@ -99,12 +214,15 @@ public class SalesDesk {
      * @param passenger Model.Passenger
      * @return boolean
      */
-    public boolean deletePassenger (Passenger passenger) {
-        if(searchPassenger(passenger.getDni()) != null) {
-            passengers.remove(passenger);
-            return true;
+    public boolean deletePassenger (Passenger passenger) throws Exception{
+        if ( ! connected) {
+            return false;
         }
-        return false;
+
+        String parameters = clientID + "\n" + passenger.getDni() + "\n" + passenger.getName() + "\n" + passenger.getSurname();
+        CommunicationPrimitive response = client.sendRequest(CommunicationPrimitive.DELETE_PASSENGER, Client.WAITTIME_SERVER, parameters);
+
+        return response.equals(CommunicationPrimitive.NOK.toString()) ? false : true;
     }
 
 
@@ -113,13 +231,23 @@ public class SalesDesk {
      * @param dni String
      * @return Model.Passenger
      */
-    public Passenger searchPassenger (String dni){
-        for (Passenger element : passengers) {
-            if (element.getDni().equals(dni)) {
-                return element;
-            }
+    public Passenger searchPassenger (String dni) throws Exception{
+        if ( ! connected) {
+            return null;
         }
-        return null;
+        if (dni == null) {
+            return null;
+        }
+
+        String parameters = clientID + "\n" + dni;
+        List<String> results =  new ArrayList<>();
+        CommunicationPrimitive response = client.sendRequest(CommunicationPrimitive.SEARCH_PASSENGER, Client.WAITTIME_SERVER, parameters, results);
+
+        if (results.isEmpty() || response.equals(CommunicationPrimitive.NOK.toString())){
+            return null;
+        } else {
+            return new Passenger(results.get(0));
+        }
     }
 
 
@@ -128,13 +256,20 @@ public class SalesDesk {
      * @param id String
      * @return Travel
      */
-    public Travel searchTravel(String id){
-        for (Travel element : travels) {
-            if (element.getId().equals(id)) {
-                return element;
-            }
+    public Travel searchTravel(String id) throws Exception{
+        if ( ! connected) {
+            return null;
         }
-        return null;
+
+        String parameters = clientID + "\n" + id;
+        List<String> results =  new ArrayList<>();
+        CommunicationPrimitive response = client.sendRequest(CommunicationPrimitive.SEARCH_TRAVEL, Client.WAITTIME_SERVER, parameters, results);
+
+        if (results.isEmpty() || response.equals(CommunicationPrimitive.NOK.toString())){
+            return null;
+        } else {
+            return new Travel(results.get(0));
+        }
     }
 
 
@@ -145,38 +280,68 @@ public class SalesDesk {
      * @param seat Integer
      * @return boolean
      */
-    public boolean assignSeat (Travel travel, Passenger passenger, int seat){
-        if (travel.isSeatFree(seat)){
-            return travel.assignSeat(seat, passenger.getDni());
+    public boolean assignSeat (Travel travel, Passenger passenger, int seat) throws Exception {
+        if ( ! connected) {
+            return false;
         }
-        return false;
+
+        String parameters = clientID + "\n" + travel.toString() + "\n" + passenger.toString() + "\n" + seat;
+        List<String> results =  new ArrayList<>();
+        CommunicationPrimitive response = client.sendRequest(CommunicationPrimitive.ASSIGN, Client.WAITTIME_SERVER, parameters, results);
+
+        if(results.isEmpty() || response.equals(CommunicationPrimitive.NOK.toString())) {
+            return false;
+        } else {
+            return response.equals(CommunicationPrimitive.NOK.toString()) ? false : true;
+        }
+
+
     }
 
 
     /**
      * Deallocates the received seat to its passenger on the received travel.
      * @param travel Model.Travel
-     * @param seat Ineger
+     * @param seat Integer
      * @return boolean
      */
-    public boolean deallocateSeat(Travel travel, int seat){
-        if (!travel.isSeatFree(seat)){
-            return travel.deallocateSeat(seat);
+    public boolean deallocateSeat(Travel travel, int seat) throws Exception{
+        if ( ! connected) {
+            return false;
         }
-        return false;
+
+        String parameters = clientID + "\n" + travel.toString() + "\n" +  seat;
+        List<String> results =  new ArrayList<>();
+        CommunicationPrimitive response = client.sendRequest(CommunicationPrimitive.DEALLOCATE, Client.WAITTIME_SERVER, parameters, results);
+
+        if(results.isEmpty() || response.equals(CommunicationPrimitive.NOK.toString())) {
+            return false;
+        } else {
+            return response.equals(CommunicationPrimitive.NOK.toString()) ? false : true;
+        }
     }
 
 
     /**
-     * Returns the passenger sited on the received seat.
+     * Returns the passenger sitting on the received seat.
      * @param travel Model.Travel
      * @param seat Integer
      * @return Model.Passenger
      */
-    public Passenger whoIsSited (Travel travel, int seat){
-        String dni = travel.whoIsSited(seat);
-        if(dni == null) return null;
-        return searchPassenger(dni);
+    public Passenger whoIsSitting(Travel travel, int seat) throws Exception{
+        if ( ! connected) {
+            return null;
+        }
+
+        String parameters = clientID + "\n" + travel.toString() + "\n" +  seat;
+        List<String> results =  new ArrayList<>();
+        CommunicationPrimitive response = client.sendRequest(CommunicationPrimitive.WHO_SITTING, Client.WAITTIME_SERVER, parameters, results);
+
+        if (results.isEmpty() || response.equals(CommunicationPrimitive.NOK.toString())){
+            return null;
+        } else {
+            return new Passenger(results.get(0));
+        }
     }
 
 
@@ -185,7 +350,7 @@ public class SalesDesk {
      * @param travel Model.Travel
      * @return String Builder
      */
-    public void generateTravelSheet(Travel travel) {
+    public void generateTravelSheet(Travel travel) throws Exception{
         StringBuilder plan = new StringBuilder();
         GregorianCalendar date = travel.getDate();
 
@@ -213,14 +378,16 @@ public class SalesDesk {
         plan.append(seatsStatus(travel));
         plan.append("\n\n");
 
+        Passenger passenger;
         for(int i = 0; i < travel.getSeatsNumber(); i++) {
-            if(!travel.isSeatFree(i)) {
+            passenger = whoIsSitting(travel, i);
+            if(passenger != null) {
                 plan.append(location.getLabel(location.SEAT)).append(i).append(COLON)
-                        .append(whoIsSited(travel, i)).append("\n");
+                        .append(passenger).append("\n");
             }
         }
 
-        String name = travel.getId()+ location.getLabel(location.SHEET_NAME_TEXT) + ROUTE_SHEET_FILE_ESXTENSION;
+        String name = travel.getId()+ location.getLabel(location.SHEET_NAME_TEXT) + ROUTE_SHEET_FILE_EXTENSION;
         PrintWriter file = null;
         try {
             file = new PrintWriter( new BufferedWriter( new FileWriter(name)));
@@ -233,11 +400,11 @@ public class SalesDesk {
 
 
     /**
-     * Retuns the seats status of a travel.
+     * Returns the seats status of a travel.
      * @param travel Model.Travel
      * @return StringBuilder
      */
-    public StringBuilder seatsStatus(Travel travel) {
+    public StringBuilder seatsStatus(Travel travel) throws Exception {
         int cols = Integer.parseInt(travel.getSeatsDistribution().split(DISTRIBUTION_SEPARATOR)[0]) + 1;
         int rows = Integer.parseInt(travel.getSeatsDistribution().split(DISTRIBUTION_SEPARATOR)[1]);
         int seatsIndex = 1;
@@ -245,7 +412,7 @@ public class SalesDesk {
         String corridorGaps = "     ";
         StringBuilder plan = new StringBuilder();
 
-        //Generates the column dessignation (A,B,C...)
+        //Generates the column designation (A,B,C...)
         plan.append("_____");
         for(int i = 0; i < cols; i++){
             if (i < corridorColumn) {
@@ -269,7 +436,7 @@ public class SalesDesk {
                 } else if((row == (rows/2)) && (col > corridorColumn) && rows > MINUM_SIZE_BACK_DOOR) { //Back door
                     plan.append("  ");
                 } else {
-                    if (travel.isSeatFree(seatsIndex)) {
+                    if (whoIsSitting(travel, seatsIndex) == null) {
                         plan.append(" ").append(" ").append(String.format("%02d", seatsIndex)).append(" ");
                     } else {
                         plan.append(" ").append("(").append(String.format("%02d", seatsIndex)).append(")");
@@ -284,172 +451,78 @@ public class SalesDesk {
 
 
     /**
-     * Saves the passengers on a file.
-     * @param fileName String
-     * @throws IOException
-     */
-    public void savePassengers (String fileName) throws IOException {
-        PrintWriter file = new PrintWriter( new BufferedWriter( new FileWriter(fileName)));
-
-        for (Passenger element : passengers) {
-            element.save(file);
-        }
-        file.close();
-    }
-
-
-    /**
-     * Saves the seats status from a travel to a file.
-     * @param fileName String
-     * @throws IOException
-     */
-    public void saveTravelsStatus (String fileName) throws IOException {
-        PrintWriter file = new PrintWriter( new BufferedWriter( new FileWriter(fileName)));
-
-        for(Travel travel : travels){
-            travel.saveTravelStatus(file);
-        }
-        file.close();
-    }
-
-
-    /**
-     * Reads the passengers from a file.
-     * @param file String
-     */
-    public void readPassengers (String file){
-        try {
-            BufferedReader bufferedReader = new BufferedReader(new FileReader(file));
-            String line = bufferedReader.readLine();
-
-            while(line != null){
-                try{
-                    passengers.add(new Passenger(line));
-                } catch (NoSuchElementException ne) {
-                    JOptionPane.showMessageDialog(null,
-                            location.getLabel(location.ERROR_READING_A_PASSENGER),
-                            "", JOptionPane.ERROR_MESSAGE);
-                }
-                line = bufferedReader.readLine();
-
-            }
-        } catch (IOException e) {
-            JOptionPane.showMessageDialog(null,
-                    location.getLabel(location.ERROR_READING_PASSENGERS),
-                    "", JOptionPane.ERROR_MESSAGE);
-        }
-    }
-
-
-    /**
-     * Reads the travels from a file.
-     * @param file String
-     */
-    public void readTravels (String file){
-        try (BufferedReader bufferedReader = new BufferedReader(new FileReader(file))) {
-            String line = bufferedReader.readLine();
-
-            while(line != null) {
-                try {
-                    travels.add(new Travel(line));
-                } catch (NoSuchElementException e) {
-                    JOptionPane.showMessageDialog(null,
-                            location.getLabel(location.ERROR_READING_A_TRAVEL) +
-                                    COLON + line.split(ELEMENTS_SEPARATOR)[0],
-                            "", JOptionPane.ERROR_MESSAGE);
-                }
-                line = bufferedReader.readLine();
-            }
-        } catch (IOException e) {
-            JOptionPane.showMessageDialog(null,
-                    location.getLabel(location.ERROR_READING_TRAVELS),
-                    "", JOptionPane.ERROR_MESSAGE);
-        }
-    }
-
-
-    /**
-     * Reads seats status of a travel from a file.
-     * @param file String
-     */
-    public void readTravelsStatus (String file) {
-        try (BufferedReader bufferedReader = new BufferedReader(new FileReader(file))) {
-            String line = bufferedReader.readLine();
-
-            while(line != null) {
-                String readID = line.split(ELEMENTS_SEPARATOR)[0]; //The first element on each line is the ID.
-                for(Travel travel : travels){ //For each travel on the travels Set.
-                    if(readID.equals(travel.getId())) { //Compares the read Id against the actual travel.
-                        loadPassengersIntoTravel(travel, line);
-                    }
-                }
-                line = bufferedReader.readLine(); //Next line
-            }
-        } catch (IOException e) {
-            JOptionPane.showMessageDialog(null,
-                    location.getLabel(location.ERROR_READING_STATUS),
-                    "", JOptionPane.ERROR_MESSAGE);
-        }
-    }
-
-
-    /**
-     * Receives a String containing the seats and DNIs and assigns them to a travel.
-     * @param travel Travel
-     * @param line String
-     */
-    public void loadPassengersIntoTravel(Travel travel, String line){
-        String assignation;
-        //Separates each pair of seats and DNIs
-        Scanner elements = new Scanner(line).useDelimiter(ELEMENTS_SEPARATOR);
-        elements.next(); //Skips the id
-
-        while(elements.hasNext()) { //For each pair of seat and DNI.
-            assignation = elements.next();
-            //Separates the seat and the DNI
-            Scanner seatDni = new Scanner(assignation).useDelimiter(DNI_SEAT_SEPARATOR);
-
-            //Assigns the passenger ID to the seat on the received travel.
-            try {
-                if (!travel.assignSeat(seatDni.nextInt(), seatDni.next())) {
-                    throw new SeatsReadException("SEAT", null);
-                }
-            } catch (NumberFormatException e){
-                throw new SeatsReadException("TRAVEL", assignation);
-            }
-        }
-    }
-
-
-    /**
      * Searches the travels for a concrete date.
      * @param date String
      * @return Collection LinkedList
      */
-    public List searchTravelsPerDate(GregorianCalendar date){
-        List foundTravels = new ArrayList();
+    public List searchTravelsPerDate(GregorianCalendar date) throws Exception{
+        if ( ! connected) {
+            return null;
+        }
+
         int day = date.get(GregorianCalendar.DAY_OF_MONTH);
         int month = date.get(GregorianCalendar.MONTH);
         int year = date.get(GregorianCalendar.YEAR);
 
-        for (Travel element : travels) {
-            if (element.getDate().get(GregorianCalendar.DAY_OF_MONTH) == day
-                    && element.getDate().get(GregorianCalendar.MONTH) == month
-                    && element.getDate().get(GregorianCalendar.YEAR) == year) {
-                foundTravels.add(element);
+        String parameters = clientID + "\n" + year + "\n" +  month + "\n" + day;
+        List<String> results =  new ArrayList<>();
+        CommunicationPrimitive response = client.sendRequest(CommunicationPrimitive.SEARCH_TRAVELS_PER_DATE, Client.WAITTIME_SERVER, parameters, results);
+
+        if (results.isEmpty() || response.equals(CommunicationPrimitive.NOK.toString()) ) {
+            return null;
+        } else {
+            List travels = new ArrayList<>();
+            for (String travel : results) {
+                travels.add(new Travel(travel));
             }
+            return travels;
         }
-        return foundTravels;
     }
 
 
     /**
-     * Sets and observer for all travel.
-     * @param observer PropertyChangeListener
+     * It receives a new connectionID server request.
+     * @param results List<String>
+     * @return Boolean
+     * @throws IOException
      */
-    public void setTravelsObserver(PropertyChangeListener observer){
-        for (Travel travel : travels) {
-            travel.addObserver(observer);
+    private boolean newConnectionIDServerRequest(List<String> results) throws IOException {
+        connectionID = results.get(0);
+        if (connectionID == null) {
+            return false;
+        }
+
+        connected = true;
+        observers.firePropertyChange(CONNECTED_PROPERTY, null, connected);
+        return true;
+    }
+
+
+    /**
+     * Receives a new assignation server request.
+     * @param property String
+     * @return Boolean
+     * @throws IOException
+     */
+    private boolean assignationServerRequest(String property, String id) throws IOException {
+        observers.firePropertyChange(property, null, id);
+        return true;
+    }
+
+
+    public boolean serverRequestFired(CommunicationPrimitive request, List<String> results) throws IOException {
+        switch(request) {
+            case NEW_CONNECTION_ID:
+                return newConnectionIDServerRequest(results);
+
+            case ASSIGN:
+                return assignationServerRequest(SEAT_CHANGED_PROPERTY, results.get(0));
+
+            case DEALLOCATE:
+                return assignationServerRequest(SEAT_CHANGED_PROPERTY, results.get(0));
+
+            default:
+                return false;
         }
     }
 }

@@ -132,6 +132,7 @@ public class WestPanel extends JPanel {
                         Integer.parseInt((String) dayComboBox.getSelectedItem()));
                 mainFrame.setSelectedDate(selectedDate);
                 mainFrame.updateTravelsPerDate(selectedDate);
+
             }
         });
     }
